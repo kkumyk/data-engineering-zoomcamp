@@ -126,6 +126,45 @@ psql -h localhost -U your_user_name -d ny_taxi
 - <i>ny_taxi</i> is the name of the database we created with the command from the previous section. 
 - The password will be requested after running the command above (the one set with the command from the previous section).
 
+## Ingesting NY Trips Data to Postgres DB with Python
+
+1. Update Dependencies by adding sqlalchemy, pyarrow and psycopg2 to poetry lock file.
+2. Download [parquet file](https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2024-01.parquet) and save it into the same folder as the ny_taxi_postgres_data subfolder.
+3. Run Docker container and connect to your Postgres db as per steps from the previous section.
+4. Once connected to db, CREATE TABLE with the schema below:
+```bash
+CREATE TABLE yellow_taxi_data (
+	VendorID INTEGER, 
+	tpep_pickup_datetime TIMESTAMP WITHOUT TIME ZONE, 
+	tpep_dropoff_datetime TIMESTAMP WITHOUT TIME ZONE, 
+	passenger_count FLOAT(53), 
+	trip_distance FLOAT(53), 
+	RatecodeID FLOAT(53), 
+	store_and_fwd_flag TEXT, 
+	PULocationID INTEGER, 
+	DOLocationID INTEGER, 
+	payment_type BIGINT, 
+	fare_amount FLOAT(53), 
+	extra FLOAT(53), 
+	mta_tax FLOAT(53), 
+	tip_amount FLOAT(53), 
+	tolls_amount FLOAT(53), 
+	improvement_surcharge FLOAT(53), 
+	total_amount FLOAT(53), 
+	congestion_surcharge FLOAT(53), 
+	Airport_fee FLOAT(53)
+);
+```
+5. Run <i>data_loading_parquet.py</i> file to load the data from the parquet file into the <i>yellow_taxi_data</i> table:
+```bash
+poetry run python data_loading_parquet.py --user=YOUR-USER --password=YOUR_PASSWORD --host=localhost --port=5432 --db=ny_taxi --tb=yellow_taxi_data --url=YOU-URL
+```
+6. Verify the ingestion with:
+```bash
+select * from yellow_taxi_data limit 5;
+```
+
+
 <br>
 <hr>
 
