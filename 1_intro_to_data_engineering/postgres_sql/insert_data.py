@@ -3,8 +3,8 @@
 import argparse, os, sys
 from time import time
 import pandas as pd 
-# import pyarrow.parquet as pq
-# from sqlalchemy import create_engine
+import pyarrow.parquet as pq
+from sqlalchemy import create_engine
 
 
 def main(params):
