@@ -52,7 +52,6 @@ COPY pipeline.py pipeline.py
 ENTRYPOINT ["python", "pipeline.py"]
 ```
 Let's build the image where <i>first_image</i> will be the name of the image and its tag will be pandas:
-
 ```bash
 docker build -t first_image:pandas .
 ```
@@ -64,7 +63,7 @@ docker run -it first_image:pandas 10
 The output result will be the same as when we run the pipeline by itself without using Docker:
 ```bash
 ['pipeline.py', '10']
-Job finished successfully! Celebrate it with 10 pizzas!
+Job finished successfully. Celebrate it with 10 pizzas.
 ```
 
 ## 2. Running Postgres in a Docker Container
@@ -73,7 +72,7 @@ Job finished successfully! Celebrate it with 10 pizzas!
 
 <i>mounting</i> - mapping of a folder on the host machine to a folder in a Docker container
 
-### Creating a Postgres database
+### Creating a Postgres Database
 
 To run Postgres in a Docker container we need to provide a few environment variables <i>volume</i> for data storage to persist the data. For this to work:
 
@@ -98,7 +97,7 @@ To run Postgres in a Docker container we need to provide a few environment varia
     - The -p is for port mapping. We map the default Postgres port to the same port in the host.
     - The last argument is the image name and tag. We run the official postgres image on its version 15.
 
-#### Issue encountered:
+#### Issue Encountered:
 ```
 docker: Error response from daemon: Ports are not available: exposing port TCP 0.0.0.0:5432 -> 0.0.0.0:0: listen tcp 0.0.0.0:5432: bind: address already in use.
 ```
@@ -117,7 +116,7 @@ sudo kill 1234
 ```
 3. Re-run the command containing the env vars and volume location.
 
-### Testing the connection
+### Testing the Connection
 
 Once the container is running, we can log into our database using the following command:
 ```bash
@@ -126,10 +125,10 @@ psql -h localhost -U your_user_name -d ny_taxi
 - <i>ny_taxi</i> is the name of the database we created with the command from the previous section. 
 - The password will be requested after running the command above (the one set with the command from the previous section).
 
-## Ingesting NY Trips Data to Postgres DB with Python
+## 3. Ingesting NY Trips Data to Postgres DB with Python
 
 1. Update Dependencies by adding sqlalchemy, pyarrow and psycopg2 to poetry lock file.
-2. Download [parquet file](https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2024-01.parquet) and save it into the same folder as the ny_taxi_postgres_data subfolder.
+2. Download [parquet file](https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2024-01.parquet) ([source](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page)) and save it into the same folder as the ny_taxi_postgres_data subfolder.
 3. Run Docker container and connect to your Postgres db as per steps from the previous section.
 4. Once connected to db, CREATE TABLE with the schema below:
 ```bash
@@ -149,24 +148,55 @@ CREATE TABLE yellow_taxi_data (
 	mta_tax FLOAT(53), 
 	tip_amount FLOAT(53), 
 	tolls_amount FLOAT(53), 
-	improvement_surcharge FLOAT(53), 
+	improvement_surcharge FLOAT(53),
 	total_amount FLOAT(53), 
 	congestion_surcharge FLOAT(53), 
 	Airport_fee FLOAT(53)
 );
 ```
-5. Run <i>data_loading_parquet.py</i> file to load the data from the parquet file into the <i>yellow_taxi_data</i> table:
+5. Run <i>insert_data.py</i> file to load the data from the parquet file into the <i>yellow_taxi_data</i> table:
 ```bash
-poetry run python data_loading_parquet.py --user=YOUR-USER --password=YOUR_PASSWORD --host=localhost --port=5432 --db=ny_taxi --tb=yellow_taxi_data --url=YOU-URL
+poetry run python insert_data.py --user=YOUR-USER --password=YOUR_PASSWORD --host=localhost --port=5432 --db=ny_taxi --tb=yellow_taxi_data --url=YOU-URL
 ```
 6. Verify the ingestion with:
-```bash
+```sql
 select * from yellow_taxi_data limit 5;
 ```
 
 
+## 4. Connecting pgAdmin and Postgres with Docker
+
 <br>
 <hr>
+
+# SQL Refresher
+
+The examples below are working two tables:
+
+- yellow_taxi_data
+- zones
+
+    Add table <i>zones</i> to Postgres db by downloading the Taxi Zone Lookup Table (CSV) [here](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page) and ingesting the data using <i>insert_data.py</i>.
+
+Select all rows from the table. If there are more than 100 rows, select the first 100:
+```sql
+select * from yellow_taxi_data limit 100; 
+```
+
+
+```sql
+select
+    *
+from
+    yellow_taxi_data t,
+    zones zpu,
+    zones zdo
+where
+    t."PULocationID" = zpu."LocationID" and
+    t."DOLocationID" = zdo."LocationID"
+limit 100;
+
+```
 
 
 # GCP
