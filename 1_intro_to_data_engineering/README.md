@@ -154,9 +154,9 @@ CREATE TABLE yellow_taxi_data (
 	Airport_fee FLOAT(53)
 );
 ```
-5. Run <i>insert_data.py</i> file to load the data from the parquet file into the <i>yellow_taxi_data</i> table:
+5. Run <i>ingest_data.py</i> file to load the data from the parquet file into the <i>yellow_taxi_data</i> table:
 ```bash
-poetry run python insert_data.py --user=YOUR-USER --password=YOUR_PASSWORD --host=localhost --port=5432 --db=ny_taxi --tb=yellow_taxi_data --url=YOU-URL
+poetry run python ingest_data.py --user=YOUR-USER --password=YOUR_PASSWORD --host=localhost --port=5432 --db=ny_taxi --tb=yellow_taxi_data --url=YOU-URL
 ```
 6. Verify the ingestion with:
 ```sql
@@ -193,7 +193,7 @@ docker network remove rm pg-network # remove network named pg-network if not in 
         --name pg-db \
         postgres:15
     ```
-3. Now run the pgAdmin container on another terminal. Replace the email and password values before running this container:
+3. Now run the pgAdmin container on another terminal. Replace the email and password values before running this container. To tun pgAdmin in docker use the command below:
 ```bash
 docker run -it \
     -e PGADMIN_DEFAULT_EMAIL="admin@admin.com" \
@@ -214,7 +214,13 @@ docker run -it \
     2. Under <i>General</i> give the Server a name, e.g.: Docker localhost 
     3. Under <i>Connection</i> add the same host name, user and password you used when running your Postgres container.
     4. After saving the configurations, you should be connected to the database.
-    5. create yellow_taxi_data table and run insert_data.py script on parquer and csv files to add taxi and zones data to the Postgres database.
+    5. Create yellow_taxi_data table and run ingest_data.py script on parquet and csv files to add taxi and zones data to the Postgres database. See instructions in the section 3.
+
+## 5. Dockerizing ingest_data.py
+
+## 6. Running Postgres and pgAdmin with Docker-compose
+
+In section 4 we made two containers talk to each other via the same network. This was done by running two command line commands. In this section we replace that process with a yaml file that will contain the instructions for the same process to happen from a single source.
 
 
 <br>
@@ -227,13 +233,17 @@ The examples below are working two tables:
 - yellow_taxi_data
 - zones
 
-    Add table <i>zones</i> to Postgres db by downloading the Taxi Zone Lookup Table (CSV) [here](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page) and ingesting the data using <i>insert_data.py</i>.
+    Add table <i>zones</i> to Postgres db by downloading the Taxi Zone Lookup Table (CSV) [here](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page) and ingesting the data using <i>ingest_data.py</i>.
+
+## 1. View the first 100 rows of the yellow_taxi_data table
 
 Select all rows from the table. If there are more than 100 rows, select the first 100:
 ```sql
 select * from yellow_taxi_data limit 100; 
 ```
+## 2. View tables' contents
 
+After running the query below we can view the contents yellow_taxi_data and the zones tables in one view. This is done by assigning alias to tables in the FROM statement and navigating to specific columns via the specified alias after the WHERE statement: 
 
 ```sql
 select
@@ -246,9 +256,8 @@ where
     t."PULocationID" = zpu."LocationID" and
     t."DOLocationID" = zdo."LocationID"
 limit 100;
-
 ```
-
+The result view looks clattered as the contents of the zones tables are returned twice as location ID matched twice - the pull-up and drop-off locations in the yellow_taxi_data table.  
 
 # GCP
 
