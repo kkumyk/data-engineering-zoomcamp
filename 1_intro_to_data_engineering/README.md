@@ -338,6 +338,40 @@ LIMIT 100;
 (0 rows)
 ```
 
+Check if there are any rows where drop off location ID does not appear in the zones table:
+
+```sql
+select
+    tpep_pickup_datetime,
+    tpep_dropoff_datetime,
+    total_amount,
+    "PULocationID",
+    "DOLocationID"
+from yellow_taxi_data t
+where "DOLocationID" not in (select "LocationID" from zones)
+limit(100);
+
+-- Should return an empty table if the original dataset in not modified:
+ tpep_pickup_datetime | tpep_dropoff_datetime | total_amount | PULocationID | DOLocationID 
+----------------------+-----------------------+--------------+--------------+--------------
+(0 rows)
+
+-- modify the zones table by deleting a specific location ID:
+delete from zones where "LocationID" = 142;
+
+-- re-run of the prev query returns rows with drop off location of 142:
+ tpep_pickup_datetime | tpep_dropoff_datetime | total_amount | PULocationID | DOLocationID 
+----------------------+-----------------------+--------------+--------------+--------------
+ 2024-01-01 00:45:51  | 2024-01-01 00:49:43   |         13.8 |          238 |          142
+ 2024-01-01 00:55:58  | 2024-01-01 01:03:54   |           17 |          238 |          142
+ 2024-01-01 00:38:04  | 2024-01-01 00:42:53   |         13.5 |          143 |          142
+ 2024-01-01 00:33:59  | 2024-01-01 00:39:53   |        15.86 |           48 |          142
+ 2024-01-01 00:05:09  | 2024-01-01 00:40:40   |         48.5 |          148 |          142...
+
+```
+
+
+
 # GCP
 
 # Terraform
