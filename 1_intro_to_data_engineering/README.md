@@ -163,8 +163,59 @@ poetry run python insert_data.py --user=YOUR-USER --password=YOUR_PASSWORD --hos
 select * from yellow_taxi_data limit 5;
 ```
 
-
 ## 4. Connecting pgAdmin and Postgres with Docker
+
+[pgAdmin](https://www.pgadmin.org/) - a convenient web-based tool to access and manage out databases.
+
+We will run pgAdmin as a container along with the Postgres container, but both containers will have to be in the same <i>virtual network</i> so that they can find each other. For this to happen:
+
+1. Create a virtual Docker network called pg-network:
+
+```bash
+docker network ls # list existing networks
+
+docker network create pg-network # create network named pg-network
+
+docker network remove rm pg-network # remove network named pg-network if not in use
+```
+2. Re-run your Postgres container
+
+    This time we will also add the <b>network name</b> and the <b>container network name - pg-db</b>. This way the pgAdmin container will find the Postgres container.
+
+    ```bash
+    docker run -it \
+        -e POSTGRES_USER="your_user_name" \
+        -e POSTGRES_PASSWORD="your_db_password" \
+        -e POSTGRES_DB="ny_taxi" \
+        -v ny_taxi_postgres_data:/var/lib/postgresql/data \
+        -p 5432:5432 \
+        --network=pg-network \
+        --name pg-db \
+        postgres:15
+    ```
+3. Now run the pgAdmin container on another terminal. Replace the email and password values before running this container:
+```bash
+docker run -it \
+    -e PGADMIN_DEFAULT_EMAIL="admin@admin.com" \
+    -e PGADMIN_DEFAULT_PASSWORD="root" \
+    -p 8080:80 \
+    --network=pg-network \
+    --name pgadmin \
+    dpage/pgadmin4
+```
+- You should be able to load pgAdmin in your browser under localhost:8080. Log in with the specified log-in email and password.
+- pgAdmin is a web app and its default port is 80; we map it to 8080 in our localhost to avoid any possible conflicts.
+- Just as with the Postgres container we specify a network and a name. However, the name in this example is not necessary as there won't be any containers trying to access this particular container.
+- The image name is dpage/pgadmin4
+<br>
+4. Configure server:
+
+    1. Servers > Register Server
+    2. Under <i>General</i> give the Server a name, e.g.: Docker localhost 
+    3. Under <i>Connection</i> add the same host name, user and password you used when running your Postgres container.
+    4. After saving the configurations, you should be connected to the database.
+    5. create yellow_taxi_data table and run insert_data.py script on parquer and csv files to add taxi and zones data to the Postgres database.
+
 
 <br>
 <hr>
