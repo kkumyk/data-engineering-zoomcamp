@@ -259,6 +259,45 @@ limit 100;
 ```
 The result view looks clattered as the contents of the zones tables are returned twice as location ID matched twice - the pull-up and drop-off locations in the yellow_taxi_data table.  
 
+## 3. Use Inner Join to select overlapping rows between 2 tables
+We only display specific columns using implicit joins and combining (concatenating) pieces of information into a single column - "pickup_loc". It contains the borough and zone information. Same for the "dropoff_loc".
+
+For more on SQL Joins - [SQL Join types explained visually](https://www.atlassian.com/data/sql/sql-join-types-explained-visually)
+ 
+
+```sql
+SELECT
+    tpep_pickup_datetime,
+    tpep_dropoff_datetime,
+    total_amount,
+    CONCAT(zpu."Borough", '/', zpu."Zone") AS "pickup_loc",
+    CONCAT(zdo."Borough", '/', zdo."Zone") AS "dropoff_loc"
+FROM
+    trips t,
+    zones zpu,
+    zones zdo
+WHERE
+    t."PULocationID" = zpu."LocationID" AND
+    t."DOLocationID" = zdo."LocationID"
+LIMIT 100;
+```
+
+```bash 
+tpep_pickup_datetime  | tpep_dropoff_datetime | total_amount |               pickup_loc                |               dropoff_loc               
+----------------------+-----------------------+--------------+-----------------------------------------+----------------------------------
+ 2024-01-01 00:57:55  | 2024-01-01 01:17:43   |         22.7 | Manhattan/Penn Station/Madison Sq West  | Manhattan/East Village
+ 2024-01-01 00:03:00  | 2024-01-01 00:09:36   |        18.75 | Manhattan/Lenox Hill East               | Manhattan/Upper East Side North
+ 2024-01-01 00:17:06  | 2024-01-01 00:35:01   |         31.3 | Manhattan/Upper East Side North         | Manhattan/East Village
+ 2024-01-01 00:36:38  | 2024-01-01 00:44:56   |           17 | Manhattan/East Village                  | Manhattan/SoHo
+ 2024-01-01 00:46:51  | 2024-01-01 00:52:57   |         16.1 | Manhattan/SoHo                          | Manhattan/Lower East Side
+ 2024-01-01 00:54:08  | 2024-01-01 01:26:31   |         41.5 | Manhattan/Lower East Side               | Manhattan/Lenox Hill West
+
+```
+
+
+
+
+
 # GCP
 
 # Terraform
