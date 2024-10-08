@@ -422,10 +422,75 @@ limit 100;
 --  2024-01-16 11:04:49  | 2024-01-16 11:10:55   | 2024-01-16 |        15.12
 --  2024-01-16 11:27:03  | 2024-01-16 11:31:06   | 2024-01-16 |          9.8
 --  2024-01-16 11:45:05  | 2024-01-16 12:07:12   | 2024-01-16 |        28.56 ...
+```
 
+## 7. Count the number of taxi trips by day using Group By
 
+```sql
+select cast(tpep_pickup_datetime as date) as "Day",
+count(1) as "Count"
+from yellow_taxi_data
+group by cast(tpep_pickup_datetime as date)
+order by "Count" desc;
 
+--     Day     | Count  
+-- ------------+--------
+--  2024-01-27 | 110515
+--  2024-01-17 | 110365
+--  2024-01-18 | 110358
+--  2024-01-25 | 110318
+--  2024-01-20 | 108768...
+```
 
+## 8. Find max values: amount paid and nr of passengers
+
+```sql 
+select
+    cast(tpep_pickup_datetime as date) as "Day",
+    "DOLocationID",
+    count(1) as "Count",
+    max(total_amount),
+    max(passenger_count)
+from yellow_taxi_data
+group by 1, 2 -- SQL is 1-indexed. The first argument is 1, not 0.
+order by "Count" desc;
+
+--     Day     | DOLocationID | Count |   max   | max 
+-- ------------+--------------+-------+---------+-----
+--  2024-01-18 |          236 |  5877 |  123.68 |   6
+--  2024-01-17 |          236 |  5766 |  247.48 |   6
+--  2024-01-25 |          236 |  5758 |  113.47 |   6
+--  2024-01-24 |          236 |  5738 |  131.24 |   6
+--  2024-01-18 |          237 |  5680 |     150 |   6
+--  2024-01-30 |          236 |  5659 |   151.2 |   6...
+```
+
+## 9. Order by day and then drop off location ID in ascending order
+
+```sql
+select
+    cast(tpep_pickup_datetime as date) as "Day",
+    "DOLocationID",
+    count(1) as "Count",
+    max(total_amount)  as "Max Paid",
+    max(passenger_count)  as "Max Passenger Count"
+from yellow_taxi_data
+group by 1, 2
+order by
+    "Day" asc,
+    "DOLocationID" asc;
+
+--     Day     | DOLocationID | Count | Max Paid | Max Passenger Count 
+-- ------------+--------------+-------+----------+---------------------
+--  2002-12-31 |          170 |     2 |     10.5 |                   1
+--  2009-01-01 |          264 |     3 |    68.29 |                   2
+--  2023-12-31 |           68 |     1 |     10.1 |                   2
+--  2023-12-31 |          137 |     1 |    18.84 |                   2
+--  2023-12-31 |          142 |     1 |     21.6 |                   2
+--  2023-12-31 |          170 |     1 |    18.75 |                   2
+--  2023-12-31 |          211 |     1 |    12.96 |                   1
+--  2023-12-31 |          217 |     1 |    42.35 |                   6
+```
 
 
 # GCP
