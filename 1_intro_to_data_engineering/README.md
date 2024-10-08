@@ -97,7 +97,7 @@ To run Postgres in a Docker container we need to provide a few environment varia
     - The -p is for port mapping. We map the default Postgres port to the same port in the host.
     - The last argument is the image name and tag. We run the official postgres image on its version 15.
 
-#### Issue Encountered:
+### Issue Encountered:
 ```
 docker: Error response from daemon: Ports are not available: exposing port TCP 0.0.0.0:5432 -> 0.0.0.0:0: listen tcp 0.0.0.0:5432: bind: address already in use.
 ```
@@ -218,7 +218,95 @@ docker run -it \
     - After saving the configurations, you should be connected to the database.
     - Create yellow_taxi_data table and run ingest_data.py script on parquet and csv files to add taxi and zones data to the Postgres database. See instructions in the section 3.
 
-## 5. Dockerizing ingest_data.py
+## 5. Putting the Ingestion Script ingest_data.py into Docker Container
+
+[video source: 1.2.4](https://www.youtube.com/watch?v=B1WwATwf-vY&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=8)
+
+### Issues Encountered:
+### 1. Was not able to build the image.
+```bash
+8.471 Note: This error originates from the build backend, and is likely not a problem with poetry but with psycopg2 (2.9.9) not supporting PEP 517 builds.
+You can verify this by running 'pip wheel --no-cache-dir --use-pep517 "psycopg2 (==2.9.9)"'.
+```
+To solve the error above, psycopg2 was replaced with psycopg2-binary. 
+
+### 2. The Docker container could not see the Parquet file.
+The yellow taxi data was not downloaded by providing the URL. The Parquet file was downloaded and saved to the same directory as the Dockerfile.
+The Dockerfile needed to be adjusted so that the input file is copied to the container as well:
+
+```bash
+COPY yellow_tripdata.parquet yellow_tripdata.parquet 
+```
+
+Once the above issues were resolved:
+
+1. Amend the Dockerfile as per tutorial and build the image:
+
+Dockerfile:
+
+```bash
+# use an official Python runtime as a parent image
+FROM python:3.11-slim
+
+# install Poetry
+RUN pip install poetry
+
+# copy the pyproject.toml and poetry.lock files
+COPY pyproject.toml poetry.lock ./
+
+# install dependencies via Poetry
+RUN poetry config virtualenvs.create false && poetry install --no-interaction --no-ansi
+
+# set up the working directory inside the container
+WORKDIR /app
+
+# copy the script to the container.
+# 1st name is source file, 2nd is destination
+COPY ingest_data.py ingest_data.py
+
+# Copy the Parquet file into the container
+COPY yellow_tripdata.parquet yellow_tripdata.parquet
+
+# define what to do first when the container runs
+# in this example, we will just run the script
+ENTRYPOINT [ "python", "ingest_data.py" ]
+```
+
+```bash
+docker build -t taxi_ingest:v001 .
+```
+
+2. Run Postgres in a Docker container:
+
+```bash
+docker run -it \
+    -e POSTGRES_USER="your_user_name" \
+    -e POSTGRES_PASSWORD="your_db_password" \
+    -e POSTGRES_DB="ny_taxi" \
+    -v ny_taxi_postgres_data:/var/lib/postgresql/data \
+    -p 5432:5432 \
+        --network=pg-network \
+        --name pg_container_name \ 
+    postgres:15
+```
+
+3. Run the ingestion file in a separate Docker container:
+
+```bash
+docker run -it \
+    --network=pg-network \
+    taxi_ingest:v001 \
+    --user=your_user_name \
+    --password=your_db_password \
+    # the same as specified as the name in the previous command when running the Postgres:
+    --host=pg_container_name \ 
+    --port=5432 \
+    --db=ny_taxi \
+    --tb=yellow_taxi_trips \
+    --url="yellow_tripdata.parquet"
+```
+
+4. In Docker Desktop run the pgadmin container and add the newly created server etc, view the ingested data. 
 
 ## 6. Running Postgres and pgAdmin with Docker-compose
 
