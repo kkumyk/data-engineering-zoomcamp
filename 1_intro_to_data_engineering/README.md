@@ -379,6 +379,7 @@ Left joins show all rows from the left part of the statement - the table add on 
 
 Left joins are used when dealing with missing values. As opposed to Inner Join, the rows that could not be matched in both tables, will be omitted in the returned table.
 
+Return all rows from yellow_taxi_data table even if a zone does not exist in the zones table:
 ```sql
 select 	tpep_pickup_datetime,
 		tpep_dropoff_datetime,
@@ -401,7 +402,26 @@ limit 100;
 
 ```
 
+## 6. Remove the time using CAST
 
+Show a column with the date of the transaction only by removing the time and returning YYYY-MM-DD:
+
+```sql
+select 
+    tpep_pickup_datetime,
+    tpep_dropoff_datetime,
+    cast(tpep_pickup_datetime as date) as "YYYY-MM-DD",
+    total_amount as "Total Amount"
+from yellow_taxi_data
+limit 100;
+
+--  tpep_pickup_datetime | tpep_dropoff_datetime | YYYY-MM-DD | Total Amount 
+-- ----------------------+-----------------------+------------+--------------
+--  2024-01-16 11:17:23  | 2024-01-16 11:19:11   | 2024-01-16 |        10.08
+--  2024-01-16 11:40:32  | 2024-01-16 11:45:49   | 2024-01-16 |         11.2
+--  2024-01-16 11:04:49  | 2024-01-16 11:10:55   | 2024-01-16 |        15.12
+--  2024-01-16 11:27:03  | 2024-01-16 11:31:06   | 2024-01-16 |          9.8
+--  2024-01-16 11:45:05  | 2024-01-16 12:07:12   | 2024-01-16 |        28.56 ...
 
 
 
