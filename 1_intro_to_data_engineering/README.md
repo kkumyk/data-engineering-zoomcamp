@@ -194,6 +194,7 @@ docker network remove rm pg-network # remove network named pg-network if not in 
         postgres:15
     ```
 3. Now run the pgAdmin container on another terminal. Replace the email and password values before running this container. To tun pgAdmin in docker use the command below:
+
 ```bash
 docker run -it \
     -e PGADMIN_DEFAULT_EMAIL="admin@admin.com" \
@@ -210,11 +211,12 @@ docker run -it \
 <br>
 4. Configure server:
 
-    1. Servers > Register Server
-    2. Under <i>General</i> give the Server a name, e.g.: Docker localhost 
-    3. Under <i>Connection</i> add the same host name, user and password you used when running your Postgres container.
-    4. After saving the configurations, you should be connected to the database.
-    5. Create yellow_taxi_data table and run ingest_data.py script on parquet and csv files to add taxi and zones data to the Postgres database. See instructions in the section 3.
+    - Servers > Register Server
+    - Under <i>General</i> give the Server a name, e.g.: Docker localhost 
+    - Under <i>Connection</i> add the same host name, user and password you used when running your Postgres container.
+    - Host name/address will be the name specified in the command for running the Posgres container. Same for the user name.
+    - After saving the configurations, you should be connected to the database.
+    - Create yellow_taxi_data table and run ingest_data.py script on parquet and csv files to add taxi and zones data to the Postgres database. See instructions in the section 3.
 
 ## 5. Dockerizing ingest_data.py
 
@@ -282,13 +284,13 @@ WHERE
     t."DOLocationID" = zdo."LocationID"
 LIMIT 100;
 
-tpep_pickup_datetime  | tpep_dropoff_datetime | total_amount |               pickup_loc                |               dropoff_loc               
-----------------------+-----------------------+--------------+-----------------------------------------+----------------------------------
- 2024-01-01 00:57:55  | 2024-01-01 01:17:43   |         22.7 | Manhattan/Penn Station/Madison Sq West  | Manhattan/East Village
- 2024-01-01 00:03:00  | 2024-01-01 00:09:36   |        18.75 | Manhattan/Lenox Hill East               | Manhattan/Upper East Side North
- 2024-01-01 00:17:06  | 2024-01-01 00:35:01   |         31.3 | Manhattan/Upper East Side North         | Manhattan/East Village
- 2024-01-01 00:46:51  | 2024-01-01 00:52:57   |         16.1 | Manhattan/SoHo                          | Manhattan/Lower East Side
- 2024-01-01 00:54:08  | 2024-01-01 01:26:31   |         41.5 | Manhattan/Lower East Side               | Manhattan/Lenox Hill West
+-- tpep_pickup_datetime  | tpep_dropoff_datetime | total_amount |               pickup_loc                |               dropoff_loc               
+-- ----------------------+-----------------------+--------------+-----------------------------------------+----------------------------------
+--  2024-01-01 00:57:55  | 2024-01-01 01:17:43   |         22.7 | Manhattan/Penn Station/Madison Sq West  | Manhattan/East Village
+--  2024-01-01 00:03:00  | 2024-01-01 00:09:36   |        18.75 | Manhattan/Lenox Hill East               | Manhattan/Upper East Side North
+--  2024-01-01 00:17:06  | 2024-01-01 00:35:01   |         31.3 | Manhattan/Upper East Side North         | Manhattan/East Village
+--  2024-01-01 00:46:51  | 2024-01-01 00:52:57   |         16.1 | Manhattan/SoHo                          | Manhattan/Lower East Side
+--  2024-01-01 00:54:08  | 2024-01-01 01:26:31   |         41.5 | Manhattan/Lower East Side               | Manhattan/Lenox Hill West
 
 ```
 Same but using explicit Inner Join:
@@ -307,13 +309,13 @@ FROM
         ON t."DOLocationID" = zdo."LocationID"
 LIMIT 100;
 
-tpep_pickup_datetime | tpep_dropoff_datetime | total_amount |               pickup_loc                |               dropoff_loc               
-----------------------+-----------------------+--------------+-----------------------------------------+-----------------------------------------
- 2024-01-01 00:57:55  | 2024-01-01 01:17:43   |         22.7 | Manhattan/Penn Station/Madison Sq West  | Manhattan/East Village
- 2024-01-01 00:03:00  | 2024-01-01 00:09:36   |        18.75 | Manhattan/Lenox Hill East               | Manhattan/Upper East Side North
- 2024-01-01 00:17:06  | 2024-01-01 00:35:01   |         31.3 | Manhattan/Upper East Side North         | Manhattan/East Village
- 2024-01-01 00:46:51  | 2024-01-01 00:52:57   |         16.1 | Manhattan/SoHo                          | Manhattan/Lower East Side
- 2024-01-01 00:54:08  | 2024-01-01 01:26:31   |         41.5 | Manhattan/Lower East Side               | Manhattan/Lenox Hill West
+-- tpep_pickup_datetime | tpep_dropoff_datetime | total_amount |               pickup_loc                |               dropoff_loc               
+-- ----------------------+-----------------------+--------------+-----------------------------------------+-----------------------------------------
+--  2024-01-01 00:57:55  | 2024-01-01 01:17:43   |         22.7 | Manhattan/Penn Station/Madison Sq West  | Manhattan/East Village
+--  2024-01-01 00:03:00  | 2024-01-01 00:09:36   |        18.75 | Manhattan/Lenox Hill East               | Manhattan/Upper East Side North
+--  2024-01-01 00:17:06  | 2024-01-01 00:35:01   |         31.3 | Manhattan/Upper East Side North         | Manhattan/East Village
+--  2024-01-01 00:46:51  | 2024-01-01 00:52:57   |         16.1 | Manhattan/SoHo                          | Manhattan/Lower East Side
+--  2024-01-01 00:54:08  | 2024-01-01 01:26:31   |         41.5 | Manhattan/Lower East Side               | Manhattan/Lenox Hill West
 
 ```
 ## 4. Check for Null values
@@ -333,9 +335,9 @@ WHERE
 LIMIT 100;
 
 -- Should return an empty table if the original dataset in not modified:
- tpep_pickup_datetime | tpep_dropoff_datetime | total_amount | PULocationID | DOLocationID 
-----------------------+-----------------------+--------------+--------------+--------------
-(0 rows)
+--  tpep_pickup_datetime | tpep_dropoff_datetime | total_amount | PULocationID | DOLocationID 
+-- ----------------------+-----------------------+--------------+--------------+--------------
+-- (0 rows)
 ```
 
 Check if there are any rows where drop off location ID does not appear in the zones table:
@@ -351,24 +353,58 @@ from yellow_taxi_data t
 where "DOLocationID" not in (select "LocationID" from zones)
 limit(100);
 
--- Should return an empty table if the original dataset in not modified:
- tpep_pickup_datetime | tpep_dropoff_datetime | total_amount | PULocationID | DOLocationID 
-----------------------+-----------------------+--------------+--------------+--------------
-(0 rows)
+-- Similar to the join query from before but we use a left join instead.
+-- n an empty table if the original dataset in not modified:
 
--- modify the zones table by deleting a specific location ID:
-delete from zones where "LocationID" = 142;
+--  tpep_pickup_datetime | tpep_dropoff_datetime | total_amount | PULocationID | DOLocationID 
+-- ----------------------+-----------------------+--------------+--------------+--------------
+-- (0 rows)
 
--- re-run of the prev query returns rows with drop off location of 142:
- tpep_pickup_datetime | tpep_dropoff_datetime | total_amount | PULocationID | DOLocationID 
-----------------------+-----------------------+--------------+--------------+--------------
- 2024-01-01 00:45:51  | 2024-01-01 00:49:43   |         13.8 |          238 |          142
- 2024-01-01 00:55:58  | 2024-01-01 01:03:54   |           17 |          238 |          142
- 2024-01-01 00:38:04  | 2024-01-01 00:42:53   |         13.5 |          143 |          142
- 2024-01-01 00:33:59  | 2024-01-01 00:39:53   |        15.86 |           48 |          142
- 2024-01-01 00:05:09  | 2024-01-01 00:40:40   |         48.5 |          148 |          142...
+-- -- modify the zones table by deleting a specific location ID:
+-- delete from zones where "LocationID" = 142;
+
+-- -- the re-run of the previous query returns only rows where drop off location ID is 142:
+--  tpep_pickup_datetime | tpep_dropoff_datetime | total_amount | PULocationID | DOLocationID 
+-- ----------------------+-----------------------+--------------+--------------+--------------
+--  2024-01-01 00:45:51  | 2024-01-01 00:49:43   |         13.8 |          238 |          142
+--  2024-01-01 00:55:58  | 2024-01-01 01:03:54   |           17 |          238 |          142
+--  2024-01-01 00:38:04  | 2024-01-01 00:42:53   |         13.5 |          143 |          142
+--  2024-01-01 00:33:59  | 2024-01-01 00:39:53   |        15.86 |           48 |          142
+--  2024-01-01 00:05:09  | 2024-01-01 00:40:40   |         48.5 |          148 |          142...
 
 ```
+
+## 5. Left Join
+Left joins show all rows from the left part of the statement - the table add on the left side of the statement - and the rows from the right table that overlap with the left one.
+
+Left joins are used when dealing with missing values. As opposed to Inner Join, the rows that could not be matched in both tables, will be omitted in the returned table.
+
+```sql
+select 	tpep_pickup_datetime,
+		tpep_dropoff_datetime,
+		total_amount,
+		concat(zpu."Borough", '/', zpu."Zone") as "Pickup Location",
+		concat(zdo."Borough", '/', zdo."Zone") as "Drop off Location"
+from yellow_taxi_data y
+left join zones zpu on "PULocationID" = zpu."LocationID"
+left join zones zdo on "DOLocationID" = zdo."LocationID"
+limit 100;
+
+--  tpep_pickup_datetime | tpep_dropoff_datetime | total_amount |             Pickup Location             |             Drop off Location             
+-- ----------------------+-----------------------+--------------+-----------------------------------------+------------------------------------------
+--  2024-01-01 00:34:38  | 2024-01-01 00:52:39   |         25.4 | Manhattan/SoHo                          | Manhattan/Murray Hill
+--  2024-01-01 00:42:43  | 2024-01-01 01:06:35   |        98.88 | Queens/JFK Airport                      | Manhattan/Kips Bay
+--  2024-01-01 00:21:02  | 2024-01-01 00:23:33   |        11.28 | Manhattan/Gramercy                      | Manhattan/Greenwich Village North
+--  2024-01-01 00:30:35  | 2024-01-01 00:55:19   |        35.38 | Manhattan/SoHo                          | Manhattan/East Chelsea
+--  2024-01-01 00:56:04  | 2024-01-01 01:50:23   |         68.1 | Manhattan/East Chelsea                  | Manhattan/Yorkville West
+--  2024-01-01 00:14:59  | 2024-01-01 00:19:52   |         14.2 | Manhattan/Yorkville West                | Manhattan/Lenox Hill West
+
+```
+
+
+
+
+
 
 
 
