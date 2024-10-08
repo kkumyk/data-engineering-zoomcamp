@@ -75,9 +75,9 @@ if __name__ == '__main__':
     parser.add_argument('--password', help='Password to the username for Postgres.')
     parser.add_argument('--host', help='Hostname for Postgres.')
     parser.add_argument('--port', help='Port for Postgres connection.')
-    parser.add_argument('--db', help='Databse name for Postgres')
+    parser.add_argument('--db', help='Database name for Postgres')
     parser.add_argument('--tb', help='Destination table name for Postgres.')
-    parser.add_argument('--url', help='URL for .paraquet file.')
+    parser.add_argument('--url', help='URL for .paraquet /.csv file.')
 
     args = parser.parse_args()
     main(args)
