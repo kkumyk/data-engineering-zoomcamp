@@ -15,8 +15,11 @@ WORKDIR /app
 
 # copy the script to the container.
 # 1st name is source file, 2nd is destination
-COPY pipeline.py pipeline.py
+COPY ingest_data.py ingest_data.py
+
+# Copy the Parquet file into the container
+COPY yellow_tripdata.parquet yellow_tripdata.parquet
 
 # define what to do first when the container runs
 # in this example, we will just run the script
-ENTRYPOINT ["python", "pipeline.py"]
+ENTRYPOINT [ "python", "ingest_data.py" ]
