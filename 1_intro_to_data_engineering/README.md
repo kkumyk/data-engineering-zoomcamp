@@ -97,7 +97,7 @@ To run Postgres in a Docker container we need to provide a few environment varia
     - The -p is for port mapping. We map the default Postgres port to the same port in the host.
     - The last argument is the image name and tag. We run the official postgres image on its version 15.
 
-### Issue Encountered:
+### Issues Encountered:
 ```
 docker: Error response from daemon: Ports are not available: exposing port TCP 0.0.0.0:5432 -> 0.0.0.0:0: listen tcp 0.0.0.0:5432: bind: address already in use.
 ```
@@ -212,9 +212,9 @@ docker run -it \
 4. Configure server:
 
     - Servers > Register Server
-    - Under <i>General</i> give the Server a name, e.g.: Docker localhost 
-    - Under <i>Connection</i> add the same host name, user and password you used when running your Postgres container.
-    - Host name/address will be the name specified in the command for running the Posgres container. Same for the user name.
+    - Under General give the Server a name, e.g.: Docker localhost 
+    - Under Connection add the same host name, user and password you used when running your Postgres container.
+    - Host name/address will be the name specified in the command for running the Postgres container. Same for the user name.
     - After saving the configurations, you should be connected to the database.
     - Create yellow_taxi_data table and run ingest_data.py script on parquet and csv files to add taxi and zones data to the Postgres database. See instructions in the section 3.
 
@@ -290,7 +290,7 @@ docker run -it \
     postgres:15
 ```
 
-3. Run the ingestion file in a separate Docker container:
+3. Add the ingestion script to the running Docker container:
 
 ```bash
 docker run -it \
