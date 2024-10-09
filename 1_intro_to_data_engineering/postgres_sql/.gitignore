@@ -2,3 +2,4 @@
 yellow_tripdata.parquet
 zones.csv
 docker-compose.yaml
+data_pgadmin
