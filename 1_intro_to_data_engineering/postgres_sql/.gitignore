@@ -1,3 +1,4 @@
 .env
 yellow_tripdata.parquet
-taxi_zone_lookup.csv
+zones.csv
+docker-compose.yaml
