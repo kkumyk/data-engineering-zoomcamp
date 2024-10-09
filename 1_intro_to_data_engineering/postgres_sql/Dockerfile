@@ -19,6 +19,7 @@ COPY ingest_data.py ingest_data.py
 
 # Copy the Parquet file into the container
 COPY yellow_tripdata.parquet yellow_tripdata.parquet
+COPY zones.csv zones.csv
 
 # define what to do first when the container runs
 # in this example, we will just run the script
