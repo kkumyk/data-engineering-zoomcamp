@@ -308,11 +308,89 @@ docker run -it \
 
 4. In Docker Desktop run the pgadmin container and add the newly created server etc, view the ingested data. 
 
-## 6. Running Postgres and pgAdmin with Docker-compose
+## 6. Running Postgres and pgAdmin with docker-compose.yaml
+[video source: 1.2.5](https://www.youtube.com/watch?v=hKI6PkPhpa0&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=8)
 
 In section 4 we made two containers talk to each other via the same network. This was done by running two command line commands. In this section we replace that process with a yaml file that will contain the instructions for the same process to happen from a single source.
 
+1. Add docker-compose.yaml file.
 
+```yaml
+services:
+  pgdatabase:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=your_user
+      - POSTGRES_PASSWORD=your_password
+      - POSTGRES_DB=ny_taxi
+    volumes:
+      - "./ny_taxi_postgres_data:/var/lib/postgresql/data:rw"
+    ports:
+      - "5432:5432"
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=root
+    volumes:
+      - "./data_pgadmin:/var/lib/pgadmin"
+    ports:
+      - "8080:80"
+```
+
+2. Create data_pgadmin folder on the same level as the ny_taxi_postgres_data folder which is also where your docker compose file was saved.
+
+3. Make sure any previous Docker containers are not running:
+
+```bash
+docker ps -a
+```
+4. Run docker compose:
+```bash
+docker-compose up
+```
+5. Login in to your pgadmin in your browser and configure a new server.
+
+- The Host name/address will be the name you gave to your Postgres service in your docker-compose file: <i>pgdatabase</i>
+
+6. Now that the Postgres and pgadmin containers are running, we need to populate it with the data:
+
+- Build the Docker image for the ingestion script:
+```bash
+docker build -t taxi_ingest:v001 .
+```
+- If you want to re-run the dockerized ingest script when you run Postgres and pgAdmin with docker-compose, you will have to find the name of the virtual network that Docker compose created for the containers.
+- For this, use the command docker network ls to find it and then change the docker run command for the dockerized script to include the network name:
+
+```bash
+docker network ls
+# e.g.: postgres_sql_default
+
+docker run -it \
+# the name of the virtual network that Docker compose created for the containers
+    --network=postgres_sql_default \
+    taxi_ingest:v001 \
+    --user=your_user \
+    --password=your_password \
+    --host=pgdatabase \ # == name of Postgres service in docker-compose:
+    --port=5432 \
+    --db=ny_taxi \
+    --tb=yellow_taxi_trips \
+    --url="yellow_tripdata.parquet"
+
+docker run -it \
+# the name of the virtual network that Docker compose created for the containers
+    --network=postgres_sql_default \
+    taxi_ingest:v001 \
+    --user=your_user \
+    --password=your_password \
+    --host=pgdatabase \ # == name of Postgres service in docker-compose:
+    --port=5432 \
+    --db=ny_taxi \
+    --tb=zones \
+    --url="zones.csv"
+```
+You should now see two tables in your pgadmin.
 <br>
 <hr>
 
