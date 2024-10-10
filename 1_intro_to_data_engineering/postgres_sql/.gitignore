@@ -3,3 +3,4 @@ yellow_tripdata.parquet
 zones.csv
 docker-compose.yaml
 data_pgadmin
+ny_taxi_postgres_data
