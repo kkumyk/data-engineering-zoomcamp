@@ -394,6 +394,24 @@ You should now see two tables in your pgadmin.
 <br>
 <hr>
 
+# Docker Networking and Port Mapping
+[video source: 1.5.1](https://www.youtube.com/watch?v=tOr4hTsHOzU)
+
+Host: Ubuntu (ports: 5432, 8080)
+
+    Two containers are sharing the same network (postgres_sql_default):
+        - container 1: pgdatabase (port 5432)
+        - container 2: pgadmin (port 80)
+
+Within this network both containers are accessible to each other and pgadmin cn talk to Postgres.
+
+In docker-compose file the line "5432:5432" means that we map the port on the computer to the port on the container. If Postgres is already running when we are trying to run docker-compose if will through an error as the port is already taken. To overcome this error, we can do port forwarding by mapping the localhost port 5431 to port on the Docker container: "5431:5432".
+
+If we want to run the ingestion script after the port mapping, we don't need to do this for the ingestion script as it talks directly to the container on port 5432.
+
+</br>
+<hr>
+
 # SQL Refresher
 [video source: 1.2.6](https://www.youtube.com/watch?v=QEcps_iskgg&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=10)
 
