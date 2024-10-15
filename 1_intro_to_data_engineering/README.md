@@ -762,9 +762,9 @@ We need to setup access first by assigning the Storage Admin, Storage Object Adm
     When the local env interacts with the cloud it does not do it directly with the resource. The above APIs enable this communication.
 
 3. Make sure that the GOOGLE_APPLICATION_CREDENTIALS environment variable is set by running the command below:
-```bash
-gcloud auth application-default login
-```
+    ```bash
+    gcloud auth application-default login
+    ```
 <hr>
 
 
