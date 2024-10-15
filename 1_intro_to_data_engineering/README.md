@@ -767,19 +767,71 @@ We need to setup access first by assigning the Storage Admin, Storage Object Adm
     ```
 <hr>
 
+## Terraform Basics
+[video source 1.3.2](https://www.youtube.com/watch?v=dNkEgO-CExg&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=11)
 
+Download Terraform client from https://developer.hashicorp.com/terraform/install
 
+#### Terraform Components are:
+1. the code files
+2. Terraform commands
 
+#### Terraform Configuration:
+- the set of files used to describe infrastructure in Terraform
+- T. config files end up in .tf for files written in Terraform language or tf.json for JSON files
+- a T. config must be in its own working directory
+- you cannot have 2 or more separate configurations in the same folder.
 
+Example of a basic main.tf file written in Terraform language to describe basic infrastructure:
 
+```bash
+terraform {
+  required_providers {
+    google = {
+      source = "hashicorp/google"
+      version = "3.5.0"
+    }
+  }
+}
 
+provider "google" {
+  credentials = file("<NAME>.json")
 
-## Creating GCP Project Infrastructure with Terraform
+  project = "<PROJECT_ID>"
+  region  = "us-central1"
+  zone    = "us-central1-c"
+}
 
-### Prerequisites
-1. Download Terraform client from https://developer.hashicorp.com/terraform/install
+resource "google_compute_network" "vpc_network" {
+  name = "terraform-network"
+}
 
-### Execution
+```
+
+- Terraform divides information into blocks, which are defined within braces ({}); statements are not required to end with a semicolon ; but use line breaks instead.
+- Arguments with single-line values in the same nesting level have their equal signs (=) aligned for easier reading.
+- There are 3 main blocks:
+    1. the <strong>terraform</strong> block - only one should be specified
+        - includes required_providers sub-block with the provider(s) required by the configuration
+    2. the <strong>provider</strong> block - multiple instances can be specified
+        - A provider is a plugin that Terraform uses to create and manage resources.
+        - Each provider needs a source in order to install the right plugin. By default the Hashicorp repository is used, in a similar way to Docker images.
+    hashicorp/google is short for registry.terraform.io/hashicorp/google .
+    Optionally, a provider can have an enforced version. If this is not specified the latest version will be used by default, which could introduce breaking changes in some rare cases.
+
+    - The provider block configures a specific provider. Since we only have a single provider, there's only a single provider block for the google provider.
+    The contents of a provider block are provider-specific. The contents in this example are meant for GCP but may be different for AWS or Azure.
+    3. the <strong>resource</strong> block - multiple instances can be specified
+        - defines the actual components of our infrastructure
+        - has 2 strings before the block which create the resource ID in the format of type.name:
+            1. the resource type
+            2. the resource name
+
+        - Resource names are the internal names that we use in our Terraform configurations to refer to each resource and have no impact on the actual infrastructure.
+        - 
+            Do not confuse the resource name with the name argument!
+
+#### Execution
 
 ```bash
 # refresh service account auth token for this session
@@ -797,3 +849,10 @@ terraform apply -var="YOUR_PROJECT_ID"
 # delete infra after work completion to avoid costs of any running services
 terraform destroy
 ```
+
+## Creating GCP Project Infrastructure with Terraform
+
+
+## Credits
+
+Big thank you to [Alvaro Navas](https://github.com/ziritrion) for [detailed and highly structured course docs](https://github.com/ziritrion/dataeng-zoomcamp/tree/main) that were used as times there the video material was not clear.
