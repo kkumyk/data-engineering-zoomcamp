@@ -724,29 +724,60 @@ Next, we are going to create a project, a service account and download authentic
     gcloud auth application-default login 
     ```
     Press <i>yes</i> to continue and authenticate in the browser (choose email and allow it). End of authentication with the Cloud SDK meaning your local setup is now authenticated with the cloud environment.
+
+You should now be ready to work with GCP.
 <hr>
 
-## Create Project Infrastructure with Terraform
-
-### Prerequisites
-1. Download Terraform client from https://developer.hashicorp.com/terraform/install
+## GCP Access Setup
 
 ### Project Infrastructure Modules in GCP:
-- Google Cloud Storage (GCP): Data Lake
-- BigQuery: Data Warehouse
 
-### Setup Access
+- Google Cloud Storage (GCP): Data Lake where the data will be stored
+- BigQuery: Data Warehouse provides a more structured way to access the data stored in the data lake
+
+In the upcoming parts of this course we are going to setup a data lake on Google Cloud Storage and a warehouse in BigQuery. 
+
+We need to setup access first by assigning the Storage Admin, Storage Object Admin, BigQuery Admin and Viewer IAM roles to the Service Account, and then enable the IAM and IAM Credentials APIs for our project:
+
 1. IAM Roles for Service account (Storage Admin, Storage Object Admin, BigQuery Admin, Viewer):
 
     Now that our local env is authenticated with Google Cloud, we need to add permissions for our service account.
-    - From GCP dashboard go to IAM and edit permissions for the last service account:
+    
+    From GCP dashboard go to IAM and edit permissions for the last service account by clicking on the pencil shaped icon on the left:
     - Select role > Storage Admin
+        - for creating and managing buckets
     - Add another role > Storage Object Admin
-    - Add another role > BigQuery Admin > Save
-2. Enable Identify and Access Management (IAM) and IAM Credentials APIs.
-When the local env interacts with the cloud it does not do it directly with the resource. The above APIs enable this communication.
+        - for creating and managing objects within the buckets
+    - Add another role > BigQuery Admin
+        - for managing BigQuery resources and data 
+        
+        Click <i>Save</i>
 
-    On the GCP dashboard, make sure to select the right project while enabling these APIs for (in case when having multiple projects).
+2. Enable Identify and Access Management (IAM) and IAM Credentials APIs:
+    - https://console.cloud.google.com/apis/library/iam.googleapis.com
+    - https://console.cloud.google.com/apis/library/iamcredentials.googleapis.com
+
+    ! On the GCP dashboard, make sure to select the right project while enabling these APIs for (in case when having multiple projects).
+
+    When the local env interacts with the cloud it does not do it directly with the resource. The above APIs enable this communication.
+
+3. Make sure that the GOOGLE_APPLICATION_CREDENTIALS environment variable is set by running the command below:
+```bash
+gcloud auth application-default login
+```
+<hr>
+
+
+
+
+
+
+
+
+## Creating GCP Project Infrastructure with Terraform
+
+### Prerequisites
+1. Download Terraform client from https://developer.hashicorp.com/terraform/install
 
 ### Execution
 
