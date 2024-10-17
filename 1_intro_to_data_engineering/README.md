@@ -1,4 +1,30 @@
 
+# Introduction to Data Engineering
+
+Data Engineering is the design and development of systems for collecting, storing and analyzing data at scale.
+
+## Docker & Postgres
+
+### Creating a custom pipeline with Docker
+
+To build the image:
+
+```bash
+docker build -t install_poetry_image_test:poetry .
+```
+
+- intall_poetry_image_test will be the name of the image
+- the image tag will be poetry
+
+Run the container and pass an argument to it, so that our pipeline will receive it:
+```bash
+docker run -it install_poetry_image_test:poetry 5
+
+# Expected result:
+# ['pipeline.py', '5']
+# Job finished successfully! Celebrate it with 5 pizzas!
+```
+
 # Docker and Postgres
 
 ## 1. Creating a Custom Pipeline with Docker
@@ -857,6 +883,42 @@ terraform destroy
 ```
 
 ## Creating GCP Project Infrastructure with Terraform
+[video resource 1.3.2](https://www.youtube.com/watch?v=dNkEgO-CExg&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=11)
+
+
+1. Create two files that will include all the blocks we need for our GCP project:
+    - <b>main.tf</b> - here we specify the following terraform block:
+
+        ```bash
+        terraform {
+        required_version = ">= 1.0"
+        backend "local" {}
+        required_providers {
+            google = {
+            source  = "hashicorp/google"
+            }
+        }
+        }
+        ```
+
+        - The <i>required_version</i> field states the minimum Terraform version to be used.
+        - The  <i>backend</i> field states where we would like to store the state of the infrastructure.
+            - <i>local</i> means that we will store it locally in our computers. Alternatively, you could store the state online.
+        - The <i>provider</i> will not make use of the credentials field because when we set up GCP access we already created a GOOGLE_APPLICATION_CREDENTIALS env-var which Terraform can read in order to get our authentication keys.
+
+
+    - <b>variables.tf</b> - here we will store variables that may change depending on your needs and location. 
+        
+        The ones to note are:
+
+        - <i>region</i> may vary depending on your geographical location; change it according to your needs.
+        - <i>BQ_DATASET</i> has the name of the table for BigQuery. You may leave it as it is or change it to fit your needs.
+        - <i>project</i> is the Project ID of your project in GCP. Since the ID is unique, it is good practice to have Terraform as for it every time in case the same code is applied on different projects.
+
+    The infrastructure we will need consists of a:
+    - Cloud Storage Bucket (google_storage-bucket) for our Data Lake
+    - BigQuery Dataset (google_bigquery_dataset)
+
 
 
 
