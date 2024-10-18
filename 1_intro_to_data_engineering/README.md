@@ -885,6 +885,20 @@ terraform destroy
 ## Creating GCP Project Infrastructure with Terraform
 [video resource 1.3.2](https://www.youtube.com/watch?v=dNkEgO-CExg&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=11)
 
+### Prerequisites
+#### Terraform Installation on Linux/Ubuntu
+```bash
+# cd to the folder with the saved binary files
+cd Downloads/
+
+# identify the right path to move the files to
+echo $PATH
+
+# add terraform to path
+mv /tmp/terraform ~/.local/bin/
+ls -l ~/.local/bin/
+```
+
 
 1. Create two files that will include all the blocks we need for our GCP project:
     - <b>main.tf</b> - here we specify the following terraform block:
@@ -919,8 +933,36 @@ terraform destroy
     - Cloud Storage Bucket (google_storage-bucket) for our Data Lake
     - BigQuery Dataset (google_bigquery_dataset)
 
+Copy the [main.tf](https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/1_intro_to_data_engineering/terraform/main.tf) and [variables.tf](https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/1_intro_to_data_engineering/terraform/variables.tf) files to a new folder within your work directory so that the subfolder only contains the two Terraform configuration files.
 
+2. Refresh service-account's auth-token for this session:
+    ```bash
+    gcloud auth application-default login
+    ```
+3. Initialize configuration and import plugins for Google provider:
+<i>cd</i> to the folder with the Terraform config files and run the following command:
+    ```bash
+    terraform init
+    ```
+This will download the necessary plugins to connect to GCP and download them to ./.terraform. 
+Add your project's ID once prompted.
 
+4. Now let's plan the infrastructure / Create resources with Terraform plan :
+    ```bash
+    terraform plan
+    ```
+Terraform will ask for your Project ID. Type it and press enter to let Terraform access GCP and figure out what to do. The infrastructure plan will be printed on screen with all the planned changes marked with a + sign next to them.
+
+5. Create Infra with Apply :
+    ```bash
+    terraform apply
+    ```
+You will need to confirm this step by typing yes when prompted. This will create all the necessary components in the infrastructure an return a terraform.tfstate with the current state of the infrastructure.
+6. Delete infra after your work
+After you've successfully created the infrastructure, you may destroy it so that it doesn't consume credit unnecessarily:
+    ```bash
+    terraform destroy
+    ```
 
 
 ## Credits
