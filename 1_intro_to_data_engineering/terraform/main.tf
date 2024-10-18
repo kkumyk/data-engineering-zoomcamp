@@ -25,7 +25,7 @@ resource "google_storage_bucket" "data-lake-bucket" {
   uniform_bucket_level_access = true
 
   versioning {
-    enabled     = true
+    enabled = true
   }
 
   lifecycle_rule {

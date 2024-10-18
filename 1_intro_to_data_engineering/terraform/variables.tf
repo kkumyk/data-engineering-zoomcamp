@@ -8,7 +8,7 @@ variable "project" {
 
 variable "region" {
   description = "Region for GCP resources. Choose as per your location: https://cloud.google.com/about/locations"
-  default = "europe-west6"
+  default = "europe-west2"
   type = string
 }
 
@@ -23,13 +23,8 @@ variable "BQ_DATASET" {
   default = "trips_data_all"
 }
 
-# Transfer service
-variable "access_key_id" {
-  description = "AWS access key"
+variable "TABLE_NAME" {
+  description = "BigQuery Table"
   type = string
-}
-
-variable "aws_secret_key" {
-  description = "AWS secret key"
-  type = string
+  default = "ny_trips"
 }
