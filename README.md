@@ -1,4 +1,4 @@
-# [Data Engineering Course](https://github.com/DataTalksClub/data-engineering-zoomcamp)
+# [Data Engineering Course by DataTalksClub](https://github.com/DataTalksClub/data-engineering-zoomcamp)
 
-## Week 1: Docker and Postgres
-
+## Module 1: Intro to Data Engineering, Docker and Postgres
+## Module 2: Workflow Orchestration with Airflow
