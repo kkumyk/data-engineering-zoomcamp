@@ -81,7 +81,6 @@ Components of a typical Airflow installation:
 - <code>flower</code>: app for monitoring the environment, available at port 5555 by default.
 - <code>airflow-init</code>: initialization service which we will customize for our needs.
 
-
 Airflow creates a folder structure when running:
 
 - ./dags - DAG_FOLDER for DAG files
@@ -117,13 +116,36 @@ lugins - for custom plugins
 - has an indicative state, which could be running, success, failed, skipped, up for retry, etc.
     - Ideally, a task should flow from none, to scheduled, to queued, to running, and finally to success.
 
-
 ## Setting up Airflow with Docker
+
+### Prerequisites
+
+1. Rename the service account credentials JSON file to named google_credentials.json
+```bash
+cd ~
+mkdir -p ~/.google/credentials/
+mv /your/path/to-downloaded-file/google_credentials.json ~/.google/credentials/google_credentials.json
+```
+
+## Ingesting Data to Local Postgres with Airflow
+Main Goal:
+- Converting the ingestion script for loading data to Postgres to Airflow DAG
+
+Learning Sources:
+
+- [Ingesting Data to Local Postgres with Airflow](https://www.youtube.com/watch?v=s2U8MWJH5xA&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb)
+
+
+
+
+
+
 </br>
 </hr>
 
 ## Learning Materials Used
 
+[Data Ingestion](https://github.com/DataTalksClub/data-engineering-zoomcamp/tree/main/cohorts/2022/week_2_data_ingestion)
 [Introduction to Workflow Orchestration](https://www.youtube.com/watch?v=0yK7LXwYeD0&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=18) (video)
 
 [Setup Airflow Environment with Docker-Compose](https://www.youtube.com/watch?v=lqDMzReAtrw&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=19) (video)
@@ -132,4 +154,4 @@ lugins - for custom plugins
 
 [Ingesting Data to Local Postgres with Airflow](https://www.youtube.com/watch?v=s2U8MWJH5xA) (video)
 
-[Alvaro Navas's Notes](https://github.com/ziritrion/dataeng-zoomcamp/blob/main/notes/2_data_ingestion.md#data-ingestion)
+[Alvaro Navas's Course Notes](https://github.com/ziritrion/dataeng-zoomcamp/blob/main/notes/2_data_ingestion.md#data-ingestion)
