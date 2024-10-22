@@ -1,4 +1,7 @@
 
+# TODO: ADD INDEX and links to videos
+
+
 # Introduction to Data Engineering
 
 Data Engineering is the design and development of systems for collecting, storing and analyzing data at scale.
@@ -13,7 +16,7 @@ To build the image:
 docker build -t install_poetry_image_test:poetry .
 ```
 
-- intall_poetry_image_test will be the name of the image
+- install_poetry_image_test will be the name of the image
 - the image tag will be poetry
 
 Run the container and pass an argument to it, so that our pipeline will receive it:
