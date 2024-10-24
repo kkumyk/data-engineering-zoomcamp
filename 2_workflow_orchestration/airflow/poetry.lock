@@ -199,17 +199,18 @@ trio = ["trio (>=0.26.1)"]
 
 [[package]]
 name = "apache-airflow"
-version = "2.9.3"
+version = "2.10.2"
 description = "Programmatically author, schedule and monitor data pipelines"
 optional = false
 python-versions = "<3.13,~=3.8"
 files = [
-    {file = "apache_airflow-2.9.3-py3-none-any.whl", hash = "sha256:4a36cb5dbd9925448ef171b72f2db0656121383e16306eded723331963d169db"},
-    {file = "apache_airflow-2.9.3.tar.gz", hash = "sha256:f9a523a57e0e0faa9afabb8e17b58cfca32119ff6889612b54edbdd987ada17b"},
+    {file = "apache_airflow-2.10.2-py3-none-any.whl", hash = "sha256:1b3a2a29a8e62702be8d1a6eb7a692f99407408d9c8cd91dff17b4b90985c6ba"},
+    {file = "apache_airflow-2.10.2.tar.gz", hash = "sha256:8049d29798fda50b8f8778fe4cf4cb3eb956ba1cb2121f0e6709397beb73efa7"},
 ]
 
 [package.dependencies]
 alembic = ">=1.13.1,<2.0"
+apache-airflow-providers-common-compat = "*"
 apache-airflow-providers-common-io = "*"
 apache-airflow-providers-common-sql = "*"
 apache-airflow-providers-fab = ">=1.0.2"
@@ -219,30 +220,33 @@ apache-airflow-providers-imap = "*"
 apache-airflow-providers-smtp = "*"
 apache-airflow-providers-sqlite = "*"
 argcomplete = ">=1.10"
-asgiref = "*"
+asgiref = ">=2.3.0"
 attrs = ">=22.1.0"
 blinker = ">=1.6.2"
-colorlog = ">=4.0.2,<5.0"
+colorlog = ">=6.8.2"
 configupdater = ">=3.1.1"
-connexion = {version = ">=2.10.0,<3.0", extras = ["flask"]}
+connexion = {version = ">=2.14.2,<3.0", extras = ["flask"]}
 cron-descriptor = ">=1.2.24"
 croniter = ">=2.0.2"
-cryptography = ">=39.0.0"
+cryptography = ">=41.0.0"
 deprecated = ">=1.2.13"
 dill = ">=0.2.2"
-flask = ">=2.2,<2.3"
-flask-caching = ">=1.5.0"
+flask = ">=2.2.1,<2.3"
+flask-caching = ">=2.0.0"
 flask-session = ">=0.4.0,<0.6"
-flask-wtf = ">=0.15"
+flask-wtf = ">=1.1.0"
 fsspec = ">=2023.10.0"
-google-re2 = ">=1.0"
+google-re2 = [
+    {version = ">=1.0", markers = "python_version < \"3.12\""},
+    {version = ">=1.1", markers = "python_version >= \"3.12\""},
+]
 gunicorn = ">=20.1.0"
-httpx = "*"
+httpx = ">=0.25.0"
 importlib_metadata = {version = ">=6.5", markers = "python_version < \"3.12\""}
 itsdangerous = ">=2.0"
 jinja2 = ">=3.0.0"
 jsonschema = ">=4.18.0"
-lazy-object-proxy = "*"
+lazy-object-proxy = ">=1.2.0"
 linkify-it-py = ">=2.0.0"
 lockfile = ">=0.12.2"
 markdown-it-py = ">=2.1.0"
@@ -251,38 +255,42 @@ marshmallow-oneofschema = ">=2.0.1"
 mdit-py-plugins = ">=0.3.0"
 methodtools = ">=0.4.7"
 opentelemetry-api = ">=1.15.0"
-opentelemetry-exporter-otlp = "*"
-packaging = ">=14.0"
+opentelemetry-exporter-otlp = ">=1.15.0"
+packaging = ">=23.0"
 pathspec = ">=0.9.0"
-pendulum = ">=2.1.2,<4.0"
-pluggy = ">=1.0"
-psutil = ">=4.2.0"
+pendulum = [
+    {version = ">=2.1.2,<4.0", markers = "python_version < \"3.12\""},
+    {version = ">=3.0.0,<4.0", markers = "python_version >= \"3.12\""},
+]
+pluggy = ">=1.5.0"
+psutil = ">=5.8.0"
 pygments = ">=2.0.1"
 pyjwt = ">=2.0.0"
 python-daemon = ">=3.0.0"
-python-dateutil = ">=2.3"
+python-dateutil = ">=2.7.0"
 python-nvd3 = ">=0.15.0"
 python-slugify = ">=5.0"
 requests = ">=2.27.0,<3"
+requests-toolbelt = ">=0.4.0"
 rfc3339-validator = ">=0.1.4"
 rich = ">=12.4.4"
 rich-argparse = ">=1.0.0"
-setproctitle = ">=1.1.8"
+setproctitle = ">=1.3.3"
 sqlalchemy = ">=1.4.36,<2.0"
 sqlalchemy-jsonfield = ">=1.0"
 tabulate = ">=0.7.5"
-tenacity = ">=6.2.0,<8.2.0 || >8.2.0"
+tenacity = ">=8.0.0,<8.2.0 || >8.2.0"
 termcolor = ">=1.1.0"
 unicodecsv = ">=0.14.1"
-universal-pathlib = ">=0.2.2"
+universal-pathlib = ">=0.2.2,<0.2.4 || >0.2.4"
 werkzeug = ">=2.0,<3"
 
 [package.extras]
-aiobotocore = ["aiobotocore (>=2.7.0)"]
+aiobotocore = ["aiobotocore (>=2.9.0)"]
 airbyte = ["apache-airflow-providers-airbyte"]
 alibaba = ["apache-airflow-providers-alibaba"]
-all = ["apache-airflow[aiobotocore]", "apache-airflow[airbyte]", "apache-airflow[alibaba]", "apache-airflow[all-dbs]", "apache-airflow[amazon]", "apache-airflow[apache-atlas]", "apache-airflow[apache-beam]", "apache-airflow[apache-cassandra]", "apache-airflow[apache-drill]", "apache-airflow[apache-druid]", "apache-airflow[apache-flink]", "apache-airflow[apache-hdfs]", "apache-airflow[apache-hive]", "apache-airflow[apache-impala]", "apache-airflow[apache-kafka]", "apache-airflow[apache-kylin]", "apache-airflow[apache-livy]", "apache-airflow[apache-pig]", "apache-airflow[apache-pinot]", "apache-airflow[apache-spark]", "apache-airflow[apache-webhdfs]", "apache-airflow[apprise]", "apache-airflow[arangodb]", "apache-airflow[asana]", "apache-airflow[async]", "apache-airflow[atlassian-jira]", "apache-airflow[celery]", "apache-airflow[cgroups]", "apache-airflow[cloudant]", "apache-airflow[cncf-kubernetes]", "apache-airflow[cohere]", "apache-airflow[common-io]", "apache-airflow[common-sql]", "apache-airflow[databricks]", "apache-airflow[datadog]", "apache-airflow[dbt-cloud]", "apache-airflow[deprecated-api]", "apache-airflow[dingding]", "apache-airflow[discord]", "apache-airflow[docker]", "apache-airflow[elasticsearch]", "apache-airflow[exasol]", "apache-airflow[fab]", "apache-airflow[facebook]", "apache-airflow[ftp]", "apache-airflow[github-enterprise]", "apache-airflow[github]", "apache-airflow[google-auth]", "apache-airflow[google]", "apache-airflow[graphviz]", "apache-airflow[grpc]", "apache-airflow[hashicorp]", "apache-airflow[http]", "apache-airflow[imap]", "apache-airflow[influxdb]", "apache-airflow[jdbc]", "apache-airflow[jenkins]", "apache-airflow[kerberos]", "apache-airflow[ldap]", "apache-airflow[leveldb]", "apache-airflow[microsoft-azure]", "apache-airflow[microsoft-mssql]", "apache-airflow[microsoft-psrp]", "apache-airflow[microsoft-winrm]", "apache-airflow[mongo]", "apache-airflow[mysql]", "apache-airflow[neo4j]", "apache-airflow[odbc]", "apache-airflow[openai]", "apache-airflow[openfaas]", "apache-airflow[openlineage]", "apache-airflow[opensearch]", "apache-airflow[opsgenie]", "apache-airflow[oracle]", "apache-airflow[otel]", "apache-airflow[pagerduty]", "apache-airflow[pandas]", "apache-airflow[papermill]", "apache-airflow[password]", "apache-airflow[pgvector]", "apache-airflow[pinecone]", "apache-airflow[postgres]", "apache-airflow[presto]", "apache-airflow[pydantic]", "apache-airflow[qdrant]", "apache-airflow[rabbitmq]", "apache-airflow[redis]", "apache-airflow[s3fs]", "apache-airflow[salesforce]", "apache-airflow[samba]", "apache-airflow[saml]", "apache-airflow[segment]", "apache-airflow[sendgrid]", "apache-airflow[sentry]", "apache-airflow[sftp]", "apache-airflow[singularity]", "apache-airflow[slack]", "apache-airflow[smtp]", "apache-airflow[snowflake]", "apache-airflow[sqlite]", "apache-airflow[ssh]", "apache-airflow[statsd]", "apache-airflow[tableau]", "apache-airflow[tabular]", "apache-airflow[telegram]", "apache-airflow[teradata]", "apache-airflow[trino]", "apache-airflow[uv]", "apache-airflow[vertica]", "apache-airflow[virtualenv]", "apache-airflow[weaviate]", "apache-airflow[yandex]", "apache-airflow[zendesk]"]
-all-core = ["apache-airflow[aiobotocore]", "apache-airflow[apache-atlas]", "apache-airflow[apache-webhdfs]", "apache-airflow[async]", "apache-airflow[cgroups]", "apache-airflow[deprecated-api]", "apache-airflow[github-enterprise]", "apache-airflow[google-auth]", "apache-airflow[graphviz]", "apache-airflow[kerberos]", "apache-airflow[ldap]", "apache-airflow[leveldb]", "apache-airflow[otel]", "apache-airflow[pandas]", "apache-airflow[password]", "apache-airflow[pydantic]", "apache-airflow[rabbitmq]", "apache-airflow[s3fs]", "apache-airflow[saml]", "apache-airflow[sentry]", "apache-airflow[statsd]", "apache-airflow[uv]", "apache-airflow[virtualenv]"]
+all = ["apache-airflow[aiobotocore]", "apache-airflow[airbyte]", "apache-airflow[alibaba]", "apache-airflow[all-dbs]", "apache-airflow[amazon]", "apache-airflow[apache-atlas]", "apache-airflow[apache-beam]", "apache-airflow[apache-cassandra]", "apache-airflow[apache-drill]", "apache-airflow[apache-druid]", "apache-airflow[apache-flink]", "apache-airflow[apache-hdfs]", "apache-airflow[apache-hive]", "apache-airflow[apache-iceberg]", "apache-airflow[apache-impala]", "apache-airflow[apache-kafka]", "apache-airflow[apache-kylin]", "apache-airflow[apache-livy]", "apache-airflow[apache-pig]", "apache-airflow[apache-pinot]", "apache-airflow[apache-spark]", "apache-airflow[apache-webhdfs]", "apache-airflow[apprise]", "apache-airflow[arangodb]", "apache-airflow[asana]", "apache-airflow[async]", "apache-airflow[atlassian-jira]", "apache-airflow[celery]", "apache-airflow[cgroups]", "apache-airflow[cloudant]", "apache-airflow[cloudpickle]", "apache-airflow[cncf-kubernetes]", "apache-airflow[cohere]", "apache-airflow[common-compat]", "apache-airflow[common-io]", "apache-airflow[common-sql]", "apache-airflow[databricks]", "apache-airflow[datadog]", "apache-airflow[dbt-cloud]", "apache-airflow[deprecated-api]", "apache-airflow[dingding]", "apache-airflow[discord]", "apache-airflow[docker]", "apache-airflow[elasticsearch]", "apache-airflow[exasol]", "apache-airflow[fab]", "apache-airflow[facebook]", "apache-airflow[ftp]", "apache-airflow[github-enterprise]", "apache-airflow[github]", "apache-airflow[google-auth]", "apache-airflow[google]", "apache-airflow[graphviz]", "apache-airflow[grpc]", "apache-airflow[hashicorp]", "apache-airflow[http]", "apache-airflow[imap]", "apache-airflow[influxdb]", "apache-airflow[jdbc]", "apache-airflow[jenkins]", "apache-airflow[kerberos]", "apache-airflow[ldap]", "apache-airflow[leveldb]", "apache-airflow[microsoft-azure]", "apache-airflow[microsoft-mssql]", "apache-airflow[microsoft-psrp]", "apache-airflow[microsoft-winrm]", "apache-airflow[mongo]", "apache-airflow[mysql]", "apache-airflow[neo4j]", "apache-airflow[odbc]", "apache-airflow[openai]", "apache-airflow[openfaas]", "apache-airflow[openlineage]", "apache-airflow[opensearch]", "apache-airflow[opsgenie]", "apache-airflow[oracle]", "apache-airflow[otel]", "apache-airflow[pagerduty]", "apache-airflow[pandas]", "apache-airflow[papermill]", "apache-airflow[password]", "apache-airflow[pgvector]", "apache-airflow[pinecone]", "apache-airflow[postgres]", "apache-airflow[presto]", "apache-airflow[pydantic]", "apache-airflow[qdrant]", "apache-airflow[rabbitmq]", "apache-airflow[redis]", "apache-airflow[s3fs]", "apache-airflow[salesforce]", "apache-airflow[samba]", "apache-airflow[saml]", "apache-airflow[segment]", "apache-airflow[sendgrid]", "apache-airflow[sentry]", "apache-airflow[sftp]", "apache-airflow[singularity]", "apache-airflow[slack]", "apache-airflow[smtp]", "apache-airflow[snowflake]", "apache-airflow[sqlite]", "apache-airflow[ssh]", "apache-airflow[statsd]", "apache-airflow[tableau]", "apache-airflow[tabular]", "apache-airflow[telegram]", "apache-airflow[teradata]", "apache-airflow[trino]", "apache-airflow[uv]", "apache-airflow[vertica]", "apache-airflow[virtualenv]", "apache-airflow[weaviate]", "apache-airflow[yandex]", "apache-airflow[ydb]", "apache-airflow[zendesk]"]
+all-core = ["apache-airflow[aiobotocore]", "apache-airflow[apache-atlas]", "apache-airflow[apache-webhdfs]", "apache-airflow[async]", "apache-airflow[cgroups]", "apache-airflow[cloudpickle]", "apache-airflow[deprecated-api]", "apache-airflow[github-enterprise]", "apache-airflow[google-auth]", "apache-airflow[graphviz]", "apache-airflow[kerberos]", "apache-airflow[ldap]", "apache-airflow[leveldb]", "apache-airflow[otel]", "apache-airflow[pandas]", "apache-airflow[password]", "apache-airflow[pydantic]", "apache-airflow[rabbitmq]", "apache-airflow[s3fs]", "apache-airflow[saml]", "apache-airflow[sentry]", "apache-airflow[statsd]", "apache-airflow[uv]", "apache-airflow[virtualenv]"]
 all-dbs = ["apache-airflow[apache-cassandra]", "apache-airflow[apache-drill]", "apache-airflow[apache-druid]", "apache-airflow[apache-hdfs]", "apache-airflow[apache-hive]", "apache-airflow[apache-impala]", "apache-airflow[apache-pinot]", "apache-airflow[arangodb]", "apache-airflow[cloudant]", "apache-airflow[databricks]", "apache-airflow[exasol]", "apache-airflow[influxdb]", "apache-airflow[microsoft-mssql]", "apache-airflow[mongo]", "apache-airflow[mysql]", "apache-airflow[neo4j]", "apache-airflow[postgres]", "apache-airflow[presto]", "apache-airflow[trino]", "apache-airflow[vertica]"]
 amazon = ["apache-airflow-providers-amazon"]
 apache-atlas = ["atlasclient (>=0.1.2)"]
@@ -293,6 +301,7 @@ apache-druid = ["apache-airflow-providers-apache-druid"]
 apache-flink = ["apache-airflow-providers-apache-flink"]
 apache-hdfs = ["apache-airflow-providers-apache-hdfs"]
 apache-hive = ["apache-airflow-providers-apache-hive"]
+apache-iceberg = ["apache-airflow-providers-apache-iceberg"]
 apache-impala = ["apache-airflow-providers-apache-impala"]
 apache-kafka = ["apache-airflow-providers-apache-kafka"]
 apache-kylin = ["apache-airflow-providers-apache-kylin"]
@@ -313,15 +322,17 @@ cassandra = ["apache-airflow[apache-cassandra]"]
 celery = ["apache-airflow-providers-celery"]
 cgroups = ["cgroupspy (>=0.2.2)"]
 cloudant = ["apache-airflow-providers-cloudant"]
+cloudpickle = ["cloudpickle"]
 cncf-kubernetes = ["apache-airflow-providers-cncf-kubernetes"]
 cohere = ["apache-airflow-providers-cohere"]
+common-compat = ["apache-airflow-providers-common-compat"]
 common-io = ["apache-airflow-providers-common-io"]
 common-sql = ["apache-airflow-providers-common-sql"]
 databricks = ["apache-airflow-providers-databricks"]
 datadog = ["apache-airflow-providers-datadog"]
 dbt-cloud = ["apache-airflow-providers-dbt-cloud"]
 deprecated-api = ["requests (>=2.27.0,<3)"]
-devel-ci = ["aiobotocore (>=2.7.0)", "aiofiles (>=23.2.0)", "aioresponses (>=0.7.6)", "amqp", "astroid (>=2.12.3,<3.0)", "atlasclient (>=0.1.2)", "authlib (>=1.0.0)", "backports-zoneinfo (>=0.2.1)", "bcrypt (>=2.0.0)", "beautifulsoup4 (>=4.7.1)", "black (>=23.12.0)", "blinker (>=1.1)", "blinker (>=1.7.0)", "cgroupspy (>=0.2.2)", "checksumdir (>=1.2.0)", "click (>=8.0)", "click (>=8.0,!=8.1.4,!=8.1.5)", "coverage (>=7.4.0)", "diagrams (>=0.23.4)", "docutils (>=0.16,<0.17)", "duckdb (>=0.10.0)", "duckdb (>=0.9.0)", "eralchemy2 (>=1.3.8)", "eventlet (>=0.33.3)", "flask-bcrypt (>=0.7.1)", "gevent (>=0.13)", "gitpython (>=3.1.40)", "graphviz (>=0.12)", "greenlet (>=0.4.9)", "hatch (>=1.9.1)", "hdfs[avro,dataframe,kerberos] (>=2.0.4)", "ipdb (>=0.13.13)", "ldap3 (>=2.5.1)", "mypy (==1.9.0)", "opentelemetry-exporter-prometheus", "pandas (>=1.2.5,<2.2)", "pipdeptree (>=2.13.1)", "plyvel", "pre-commit (>=3.5.0)", "pydantic (>=2.3.0)", "pygithub (>=2.1.1)", "pykerberos (>=1.1.13)", "pytest (>=7.4.4,<8.0)", "pytest-asyncio (>=0.23.3)", "pytest-cov (>=4.1.0)", "pytest-custom-exit-code (>=0.3.0)", "pytest-icdiff (>=0.9)", "pytest-instafail (>=0.5.0)", "pytest-mock (>=3.12.0)", "pytest-rerunfailures (>=13.0)", "pytest-timeouts (>=1.2.1)", "pytest-xdist (>=3.5.0)", "python-ldap", "python3-saml (>=1.16.0)", "requests (>=2.27.0,<3)", "requests-kerberos (>=0.10.0)", "requests-mock (>=1.11.0)", "restructuredtext-lint (>=1.4.0)", "rich-click (>=1.7.0)", "ruff (==0.3.3)", "s3fs (>=2023.10.0)", "semver (>=3.0.2)", "sentry-sdk (>=1.32.0,!=1.33.0)", "sphinx (>=5.3.0,<6.0.0)", "sphinx-airflow-theme (>=0.0.12)", "sphinx-argparse (>=0.4.0)", "sphinx-autoapi (>=2.1.1)", "sphinx-copybutton (>=0.5.2)", "sphinx-design (>=0.5.0)", "sphinx-jinja (>=2.0.2)", "sphinx-rtd-theme (>=2.0.0)", "sphinxcontrib-applehelp (>=1.0.4)", "sphinxcontrib-devhelp (>=1.0.2)", "sphinxcontrib-htmlhelp (>=2.0.1)", "sphinxcontrib-httpdomain (>=1.8.1)", "sphinxcontrib-jquery (>=4.1)", "sphinxcontrib-jsmath (>=1.0.1)", "sphinxcontrib-qthelp (>=1.0.3)", "sphinxcontrib-redoc (>=1.6.0)", "sphinxcontrib-serializinghtml (==1.1.5)", "sphinxcontrib-spelling (>=8.0.0)", "statsd (>=3.3.0)", "thrift-sasl (>=0.2.0)", "time-machine (>=2.13.0)", "towncrier (>=23.11.0)", "twine (>=4.0.2)", "types-aiofiles", "types-certifi", "types-croniter", "types-deprecated", "types-docutils", "types-markdown", "types-paramiko", "types-protobuf", "types-pymysql", "types-python-dateutil", "types-python-slugify", "types-pytz", "types-pyyaml", "types-redis", "types-requests", "types-setuptools", "types-tabulate", "types-termcolor", "types-toml", "uv (>=0.1.32)", "virtualenv", "wheel (>=0.42.0)", "yamllint (>=1.33.0)"]
+devel-ci = ["aiobotocore (>=2.9.0)", "aiofiles (>=23.2.0)", "aioresponses (>=0.7.6)", "amqp", "astroid (>=2.12.3,<3.0)", "atlasclient (>=0.1.2)", "authlib (>=1.0.0)", "backports-zoneinfo (>=0.2.1)", "bcrypt (>=2.0.0)", "beautifulsoup4 (>=4.7.1)", "black (>=23.12.0)", "blinker (>=1.1)", "blinker (>=1.7.0)", "cgroupspy (>=0.2.2)", "checksumdir (>=1.2.0)", "click (>=8.0)", "click (>=8.0,!=8.1.4,!=8.1.5)", "cloudpickle", "coverage (>=7.4.0)", "diagrams (>=0.23.4)", "docutils (>=0.16,<0.17)", "duckdb (>=0.10.0)", "duckdb (>=0.9.0)", "eralchemy2 (>=1.3.8)", "eventlet (>=0.33.3)", "flask-bcrypt (>=0.7.1)", "gevent (>=0.13)", "gitpython (>=3.1.40)", "graphviz (>=0.12)", "greenlet (>=0.4.9)", "hatch (>=1.9.1)", "hdfs[avro,dataframe,kerberos] (>=2.0.4)", "incremental (>=22.10.0,!=24.7.0,!=24.7.1)", "ipdb (>=0.13.13)", "jmespath (>=0.7.0)", "ldap3 (>=2.5.1)", "mypy (==1.9.0)", "opentelemetry-exporter-prometheus", "pandas (>=1.2.5,<2.2)", "pipdeptree (>=2.13.1)", "plyvel", "pre-commit (>=3.5.0)", "pydantic (>=2.3.0)", "pygithub (>=2.1.1)", "pykerberos (>=1.1.13)", "pytest (>=8.2,<9)", "pytest-asyncio (>=0.23.6)", "pytest-cov (>=4.1.0)", "pytest-custom-exit-code (>=0.3.0)", "pytest-icdiff (>=0.9)", "pytest-instafail (>=0.5.0)", "pytest-mock (>=3.12.0)", "pytest-rerunfailures (>=13.0)", "pytest-timeouts (>=1.2.1)", "pytest-xdist (>=3.5.0)", "python-ldap", "python3-saml (>=1.16.0)", "requests (>=2.27.0,<3)", "requests-kerberos (>=0.10.0)", "requests-mock (>=1.11.0)", "restructuredtext-lint (>=1.4.0)", "rich-click (>=1.7.0)", "ruff (==0.5.5)", "s3fs (>=2023.10.0)", "semver (>=3.0.2)", "sentry-sdk (>=1.32.0,!=1.33.0)", "sphinx (>=5.3.0,<6.0.0)", "sphinx-airflow-theme (>=0.0.12)", "sphinx-argparse (>=0.4.0)", "sphinx-autoapi (>=2.1.1)", "sphinx-copybutton (>=0.5.2)", "sphinx-design (>=0.5.0)", "sphinx-jinja (>=2.0.2)", "sphinx-rtd-theme (>=2.0.0)", "sphinxcontrib-applehelp (>=1.0.4)", "sphinxcontrib-devhelp (>=1.0.2)", "sphinxcontrib-htmlhelp (>=2.0.1)", "sphinxcontrib-httpdomain (>=1.8.1)", "sphinxcontrib-jquery (>=4.1)", "sphinxcontrib-jsmath (>=1.0.1)", "sphinxcontrib-qthelp (>=1.0.3)", "sphinxcontrib-redoc (>=1.6.0)", "sphinxcontrib-serializinghtml (==1.1.5)", "sphinxcontrib-spelling (>=8.0.0)", "statsd (>=3.3.0)", "thrift-sasl (>=0.2.0)", "time-machine (>=2.13.0)", "towncrier (>=23.11.0)", "twine (>=4.0.2)", "types-aiofiles", "types-certifi", "types-croniter", "types-deprecated", "types-docutils", "types-markdown", "types-paramiko", "types-protobuf", "types-pymysql", "types-python-dateutil", "types-python-slugify", "types-pytz", "types-pyyaml", "types-redis", "types-requests", "types-setuptools", "types-tabulate", "types-termcolor", "types-toml", "uv (>=0.1.32)", "virtualenv", "wheel (>=0.42.0)", "yamllint (>=1.33.0)"]
 dingding = ["apache-airflow-providers-dingding"]
 discord = ["apache-airflow-providers-discord"]
 docker = ["apache-airflow-providers-docker"]
@@ -409,6 +420,7 @@ weaviate = ["apache-airflow-providers-weaviate"]
 webhdfs = ["apache-airflow[apache-webhdfs]"]
 winrm = ["apache-airflow[microsoft-winrm]"]
 yandex = ["apache-airflow-providers-yandex"]
+ydb = ["apache-airflow-providers-ydb"]
 zendesk = ["apache-airflow-providers-zendesk"]
 
 [[package]]
@@ -756,13 +768,13 @@ dev = ["freezegun (>=1.0,<2.0)", "pytest (>=6.0)", "pytest-cov"]
 
 [[package]]
 name = "backoff"
-version = "1.11.1"
+version = "2.2.1"
 description = "Function decoration for backoff and retry"
 optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+python-versions = ">=3.7,<4.0"
 files = [
-    {file = "backoff-1.11.1-py2.py3-none-any.whl", hash = "sha256:61928f8fa48d52e4faa81875eecf308eccfb1016b018bb6bd21e05b5d90a96c5"},
-    {file = "backoff-1.11.1.tar.gz", hash = "sha256:ccb962a2378418c667b3c979b504fdeb7d9e0d29c0579e3b13b86467177728cb"},
+    {file = "backoff-2.2.1-py3-none-any.whl", hash = "sha256:63579f9a0628e06278f7e47b7d7d5b6ce20dc65c5e96a6f3ca99a6adca0396e8"},
+    {file = "backoff-2.2.1.tar.gz", hash = "sha256:03f829f5bb1923180821643f8753b0502c3b682293992485b0eef2807afa5cba"},
 ]
 
 [[package]]
@@ -1079,17 +1091,20 @@ files = [
 
 [[package]]
 name = "colorlog"
-version = "4.8.0"
-description = "Log formatting with colors!"
+version = "6.8.2"
+description = "Add colours to the output of Python's logging module."
 optional = false
-python-versions = "*"
+python-versions = ">=3.6"
 files = [
-    {file = "colorlog-4.8.0-py2.py3-none-any.whl", hash = "sha256:3dd15cb27e8119a24c1a7b5c93f9f3b455855e0f73993b1c25921b2f646f1dcd"},
-    {file = "colorlog-4.8.0.tar.gz", hash = "sha256:59b53160c60902c405cdec28d38356e09d40686659048893e026ecbd589516b1"},
+    {file = "colorlog-6.8.2-py3-none-any.whl", hash = "sha256:4dcbb62368e2800cb3c5abd348da7e53f6c362dda502ec27c560b2e58a66bd33"},
+    {file = "colorlog-6.8.2.tar.gz", hash = "sha256:3e3e079a41feb5a1b64f978b5ea4f46040a94f11f0e8bbb8261e3dbbeca64d44"},
 ]
 
 [package.dependencies]
 colorama = {version = "*", markers = "sys_platform == \"win32\""}
+
+[package.extras]
+development = ["black", "flake8", "mypy", "pytest", "types-colorama"]
 
 [[package]]
 name = "configupdater"
@@ -1107,32 +1122,32 @@ testing = ["flake8", "pytest", "pytest-cov", "pytest-randomly", "pytest-xdist", 
 
 [[package]]
 name = "connexion"
-version = "2.14.1"
+version = "2.14.2"
 description = "Connexion - API first applications with OpenAPI/Swagger and Flask"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "connexion-2.14.1-py2.py3-none-any.whl", hash = "sha256:f343717241b4c4802a694c38fee66fb1693c897fe4ea5a957fa9b3b07caf6394"},
-    {file = "connexion-2.14.1.tar.gz", hash = "sha256:99aa5781e70a7b94f8ffae8cf89f309d49cdb811bbd65a8e2f2546f3b19a01e6"},
+    {file = "connexion-2.14.2-py2.py3-none-any.whl", hash = "sha256:a73b96a0e07b16979a42cde7c7e26afe8548099e352cf350f80c57185e0e0b36"},
+    {file = "connexion-2.14.2.tar.gz", hash = "sha256:dbc06f52ebeebcf045c9904d570f24377e8bbd5a6521caef15a06f634cf85646"},
 ]
 
 [package.dependencies]
 clickclick = ">=1.2,<21"
-flask = ">=1.0.4,<3"
+flask = ">=1.0.4,<2.3"
 inflection = ">=0.3.1,<0.6"
 itsdangerous = ">=0.24"
 jsonschema = ">=2.5.1,<5"
 packaging = ">=20"
 PyYAML = ">=5.1,<7"
 requests = ">=2.9.1,<3"
-werkzeug = ">=1.0,<3"
+werkzeug = ">=1.0,<2.3"
 
 [package.extras]
 aiohttp = ["MarkupSafe (>=0.23)", "aiohttp (>=2.3.10,<4)", "aiohttp-jinja2 (>=0.14.0,<2)"]
 docs = ["sphinx-autoapi (==1.8.1)"]
-flask = ["flask (>=1.0.4,<3)", "itsdangerous (>=0.24)"]
+flask = ["flask (>=1.0.4,<2.3)", "itsdangerous (>=0.24)"]
 swagger-ui = ["swagger-ui-bundle (>=0.0.2,<0.1)"]
-tests = ["MarkupSafe (>=0.23)", "aiohttp (>=2.3.10,<4)", "aiohttp-jinja2 (>=0.14.0,<2)", "aiohttp-remotes", "decorator (>=5,<6)", "flask (>=1.0.4,<3)", "itsdangerous (>=0.24)", "pytest (>=6,<7)", "pytest-aiohttp", "pytest-cov (>=2,<3)", "swagger-ui-bundle (>=0.0.2,<0.1)", "testfixtures (>=6,<7)"]
+tests = ["MarkupSafe (>=0.23)", "aiohttp (>=2.3.10,<4)", "aiohttp-jinja2 (>=0.14.0,<2)", "aiohttp-remotes", "decorator (>=5,<6)", "flask (>=1.0.4,<2.3)", "itsdangerous (>=0.24)", "pytest (>=6,<7)", "pytest-aiohttp", "pytest-cov (>=2,<3)", "swagger-ui-bundle (>=0.0.2,<0.1)", "testfixtures (>=6,<7)"]
 
 [[package]]
 name = "cron-descriptor"
@@ -3014,19 +3029,19 @@ grpcio = ">=1.12.0"
 
 [[package]]
 name = "grpcio-status"
-version = "1.67.0"
+version = "1.62.3"
 description = "Status proto mapping for gRPC"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.6"
 files = [
-    {file = "grpcio_status-1.67.0-py3-none-any.whl", hash = "sha256:0e79e2e01ba41a6ca6ed9d7a825323c511fe1653a646f8014c7e3c8132527acc"},
-    {file = "grpcio_status-1.67.0.tar.gz", hash = "sha256:c3e5a86fa007e9e263cd5f988a8a907484da4caab582874ea2a4a6092734046b"},
+    {file = "grpcio-status-1.62.3.tar.gz", hash = "sha256:289bdd7b2459794a12cf95dc0cb727bd4a1742c37bd823f760236c937e53a485"},
+    {file = "grpcio_status-1.62.3-py3-none-any.whl", hash = "sha256:f9049b762ba8de6b1086789d8315846e094edac2c50beaf462338b301a8fd4b8"},
 ]
 
 [package.dependencies]
 googleapis-common-protos = ">=1.5.5"
-grpcio = ">=1.67.0"
-protobuf = ">=5.26.1,<6.0dev"
+grpcio = ">=1.62.3"
+protobuf = ">=4.21.6"
 
 [[package]]
 name = "gunicorn"
@@ -3811,73 +3826,86 @@ importlib-metadata = ">=6.0,<=8.4.0"
 
 [[package]]
 name = "opentelemetry-exporter-otlp"
-version = "1.11.1"
+version = "1.27.0"
 description = "OpenTelemetry Collector Exporters"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.8"
 files = [
-    {file = "opentelemetry-exporter-otlp-1.11.1.tar.gz", hash = "sha256:c275fd2045bf28b8bfeef226f3c73ede7b5bb5d0f7c4669c508f19618a70409c"},
-    {file = "opentelemetry_exporter_otlp-1.11.1-py3-none-any.whl", hash = "sha256:2eeeb8e2f3f22958dd306da44f6d5920733b6dd5442ce47e424c920c8e548aa4"},
+    {file = "opentelemetry_exporter_otlp-1.27.0-py3-none-any.whl", hash = "sha256:7688791cbdd951d71eb6445951d1cfbb7b6b2d7ee5948fac805d404802931145"},
+    {file = "opentelemetry_exporter_otlp-1.27.0.tar.gz", hash = "sha256:4a599459e623868cc95d933c301199c2367e530f089750e115599fccd67cb2a1"},
 ]
 
 [package.dependencies]
-opentelemetry-exporter-otlp-proto-grpc = "1.11.1"
-opentelemetry-exporter-otlp-proto-http = "1.11.1"
+opentelemetry-exporter-otlp-proto-grpc = "1.27.0"
+opentelemetry-exporter-otlp-proto-http = "1.27.0"
+
+[[package]]
+name = "opentelemetry-exporter-otlp-proto-common"
+version = "1.27.0"
+description = "OpenTelemetry Protobuf encoding"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "opentelemetry_exporter_otlp_proto_common-1.27.0-py3-none-any.whl", hash = "sha256:675db7fffcb60946f3a5c43e17d1168a3307a94a930ecf8d2ea1f286f3d4f79a"},
+    {file = "opentelemetry_exporter_otlp_proto_common-1.27.0.tar.gz", hash = "sha256:159d27cf49f359e3798c4c3eb8da6ef4020e292571bd8c5604a2a573231dd5c8"},
+]
+
+[package.dependencies]
+opentelemetry-proto = "1.27.0"
 
 [[package]]
 name = "opentelemetry-exporter-otlp-proto-grpc"
-version = "1.11.1"
+version = "1.27.0"
 description = "OpenTelemetry Collector Protobuf over gRPC Exporter"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.8"
 files = [
-    {file = "opentelemetry-exporter-otlp-proto-grpc-1.11.1.tar.gz", hash = "sha256:e34fc79c76e299622812da5fe37cfeffdeeea464007530488d824e6c413e6a58"},
-    {file = "opentelemetry_exporter_otlp_proto_grpc-1.11.1-py3-none-any.whl", hash = "sha256:7cabcf548604ab8156644bba0e9cb0a9c50561d621be39429e32581f5c8247a6"},
+    {file = "opentelemetry_exporter_otlp_proto_grpc-1.27.0-py3-none-any.whl", hash = "sha256:56b5bbd5d61aab05e300d9d62a6b3c134827bbd28d0b12f2649c2da368006c9e"},
+    {file = "opentelemetry_exporter_otlp_proto_grpc-1.27.0.tar.gz", hash = "sha256:af6f72f76bcf425dfb5ad11c1a6d6eca2863b91e63575f89bb7b4b55099d968f"},
 ]
 
 [package.dependencies]
-backoff = ">=1.10.0,<2.0.0"
+deprecated = ">=1.2.6"
 googleapis-common-protos = ">=1.52,<2.0"
 grpcio = ">=1.0.0,<2.0.0"
-opentelemetry-api = ">=1.3,<2.0"
-opentelemetry-proto = "1.11.1"
-opentelemetry-sdk = ">=1.11,<2.0"
-
-[package.extras]
-test = ["pytest-grpc"]
+opentelemetry-api = ">=1.15,<2.0"
+opentelemetry-exporter-otlp-proto-common = "1.27.0"
+opentelemetry-proto = "1.27.0"
+opentelemetry-sdk = ">=1.27.0,<1.28.0"
 
 [[package]]
 name = "opentelemetry-exporter-otlp-proto-http"
-version = "1.11.1"
+version = "1.27.0"
 description = "OpenTelemetry Collector Protobuf over HTTP Exporter"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.8"
 files = [
-    {file = "opentelemetry-exporter-otlp-proto-http-1.11.1.tar.gz", hash = "sha256:11a4a4c660f34ebc5cd455da10e405c763fb2e23ac634a9507f90bd244510a4f"},
-    {file = "opentelemetry_exporter_otlp_proto_http-1.11.1-py3-none-any.whl", hash = "sha256:53abdc27c7a0973194ac13f96a253c6f7430b921f904c288d7b62e873c3f5945"},
+    {file = "opentelemetry_exporter_otlp_proto_http-1.27.0-py3-none-any.whl", hash = "sha256:688027575c9da42e179a69fe17e2d1eba9b14d81de8d13553a21d3114f3b4d75"},
+    {file = "opentelemetry_exporter_otlp_proto_http-1.27.0.tar.gz", hash = "sha256:2103479092d8eb18f61f3fbff084f67cc7f2d4a7d37e75304b8b56c1d09ebef5"},
 ]
 
 [package.dependencies]
-backoff = ">=1.10.0,<2.0.0"
+deprecated = ">=1.2.6"
 googleapis-common-protos = ">=1.52,<2.0"
-opentelemetry-api = ">=1.3,<2.0"
-opentelemetry-proto = "1.11.1"
-opentelemetry-sdk = ">=1.11,<2.0"
+opentelemetry-api = ">=1.15,<2.0"
+opentelemetry-exporter-otlp-proto-common = "1.27.0"
+opentelemetry-proto = "1.27.0"
+opentelemetry-sdk = ">=1.27.0,<1.28.0"
 requests = ">=2.7,<3.0"
 
 [[package]]
 name = "opentelemetry-proto"
-version = "1.11.1"
+version = "1.27.0"
 description = "OpenTelemetry Python Proto"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.8"
 files = [
-    {file = "opentelemetry-proto-1.11.1.tar.gz", hash = "sha256:5df0ec69510a9e2414c0410d91a698ded5a04d3dd37f7d2a3e119e3c42a30647"},
-    {file = "opentelemetry_proto-1.11.1-py3-none-any.whl", hash = "sha256:4d4663123b4777823aa533f478c6cef3ecbcf696d8dc6ac7fd6a90f37a01eafd"},
+    {file = "opentelemetry_proto-1.27.0-py3-none-any.whl", hash = "sha256:b133873de5581a50063e1e4b29cdcf0c5e253a8c2d8dc1229add20a4c3830ace"},
+    {file = "opentelemetry_proto-1.27.0.tar.gz", hash = "sha256:33c9345d91dafd8a74fc3d7576c5a38f18b7fdf8d02983ac67485386132aedd6"},
 ]
 
 [package.dependencies]
-protobuf = ">=3.13.0"
+protobuf = ">=3.19,<5.0"
 
 [[package]]
 name = "opentelemetry-sdk"
@@ -4299,22 +4327,22 @@ testing = ["google-api-core (>=1.31.5)"]
 
 [[package]]
 name = "protobuf"
-version = "5.28.3"
+version = "4.25.5"
 description = ""
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "protobuf-5.28.3-cp310-abi3-win32.whl", hash = "sha256:0c4eec6f987338617072592b97943fdbe30d019c56126493111cf24344c1cc24"},
-    {file = "protobuf-5.28.3-cp310-abi3-win_amd64.whl", hash = "sha256:91fba8f445723fcf400fdbe9ca796b19d3b1242cd873907979b9ed71e4afe868"},
-    {file = "protobuf-5.28.3-cp38-abi3-macosx_10_9_universal2.whl", hash = "sha256:a3f6857551e53ce35e60b403b8a27b0295f7d6eb63d10484f12bc6879c715687"},
-    {file = "protobuf-5.28.3-cp38-abi3-manylinux2014_aarch64.whl", hash = "sha256:3fa2de6b8b29d12c61911505d893afe7320ce7ccba4df913e2971461fa36d584"},
-    {file = "protobuf-5.28.3-cp38-abi3-manylinux2014_x86_64.whl", hash = "sha256:712319fbdddb46f21abb66cd33cb9e491a5763b2febd8f228251add221981135"},
-    {file = "protobuf-5.28.3-cp38-cp38-win32.whl", hash = "sha256:3e6101d095dfd119513cde7259aa703d16c6bbdfae2554dfe5cfdbe94e32d548"},
-    {file = "protobuf-5.28.3-cp38-cp38-win_amd64.whl", hash = "sha256:27b246b3723692bf1068d5734ddaf2fccc2cdd6e0c9b47fe099244d80200593b"},
-    {file = "protobuf-5.28.3-cp39-cp39-win32.whl", hash = "sha256:135658402f71bbd49500322c0f736145731b16fc79dc8f367ab544a17eab4535"},
-    {file = "protobuf-5.28.3-cp39-cp39-win_amd64.whl", hash = "sha256:70585a70fc2dd4818c51287ceef5bdba6387f88a578c86d47bb34669b5552c36"},
-    {file = "protobuf-5.28.3-py3-none-any.whl", hash = "sha256:cee1757663fa32a1ee673434fcf3bf24dd54763c79690201208bafec62f19eed"},
-    {file = "protobuf-5.28.3.tar.gz", hash = "sha256:64badbc49180a5e401f373f9ce7ab1d18b63f7dd4a9cdc43c92b9f0b481cef7b"},
+    {file = "protobuf-4.25.5-cp310-abi3-win32.whl", hash = "sha256:5e61fd921603f58d2f5acb2806a929b4675f8874ff5f330b7d6f7e2e784bbcd8"},
+    {file = "protobuf-4.25.5-cp310-abi3-win_amd64.whl", hash = "sha256:4be0571adcbe712b282a330c6e89eae24281344429ae95c6d85e79e84780f5ea"},
+    {file = "protobuf-4.25.5-cp37-abi3-macosx_10_9_universal2.whl", hash = "sha256:b2fde3d805354df675ea4c7c6338c1aecd254dfc9925e88c6d31a2bcb97eb173"},
+    {file = "protobuf-4.25.5-cp37-abi3-manylinux2014_aarch64.whl", hash = "sha256:919ad92d9b0310070f8356c24b855c98df2b8bd207ebc1c0c6fcc9ab1e007f3d"},
+    {file = "protobuf-4.25.5-cp37-abi3-manylinux2014_x86_64.whl", hash = "sha256:fe14e16c22be926d3abfcb500e60cab068baf10b542b8c858fa27e098123e331"},
+    {file = "protobuf-4.25.5-cp38-cp38-win32.whl", hash = "sha256:98d8d8aa50de6a2747efd9cceba361c9034050ecce3e09136f90de37ddba66e1"},
+    {file = "protobuf-4.25.5-cp38-cp38-win_amd64.whl", hash = "sha256:b0234dd5a03049e4ddd94b93400b67803c823cfc405689688f59b34e0742381a"},
+    {file = "protobuf-4.25.5-cp39-cp39-win32.whl", hash = "sha256:abe32aad8561aa7cc94fc7ba4fdef646e576983edb94a73381b03c53728a626f"},
+    {file = "protobuf-4.25.5-cp39-cp39-win_amd64.whl", hash = "sha256:7a183f592dc80aa7c8da7ad9e55091c4ffc9497b3054452d629bb85fa27c2a45"},
+    {file = "protobuf-4.25.5-py3-none-any.whl", hash = "sha256:0aebecb809cae990f8129ada5ca273d9d670b76d9bfc9b1809f0a9c02b7dbf41"},
+    {file = "protobuf-4.25.5.tar.gz", hash = "sha256:7f8249476b4a9473645db7f8ab42b02fe1488cbe5fb72fddd445e0665afd8584"},
 ]
 
 [[package]]
@@ -5614,20 +5642,20 @@ zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
 name = "werkzeug"
-version = "2.3.8"
+version = "2.2.3"
 description = "The comprehensive WSGI web application library."
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.7"
 files = [
-    {file = "werkzeug-2.3.8-py3-none-any.whl", hash = "sha256:bba1f19f8ec89d4d607a3bd62f1904bd2e609472d93cd85e9d4e178f472c3748"},
-    {file = "werkzeug-2.3.8.tar.gz", hash = "sha256:554b257c74bbeb7a0d254160a4f8ffe185243f52a52035060b761ca62d977f03"},
+    {file = "Werkzeug-2.2.3-py3-none-any.whl", hash = "sha256:56433961bc1f12533306c624f3be5e744389ac61d722175d543e1751285da612"},
+    {file = "Werkzeug-2.2.3.tar.gz", hash = "sha256:2e1ccc9417d4da358b9de6f174e3ac094391ea1d4fbef2d667865d819dfd0afe"},
 ]
 
 [package.dependencies]
 MarkupSafe = ">=2.1.1"
 
 [package.extras]
-watchdog = ["watchdog (>=2.3)"]
+watchdog = ["watchdog"]
 
 [[package]]
 name = "wirerope"
@@ -5861,4 +5889,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.13"
-content-hash = "1604af5797f0983bb215c2dafe3c0628dbc224f087b440f4eb23f4eb5768ad07"
+content-hash = "caac4f4c428100b3785abc3efb42b8f3677acdab930e4c3dc96a17ebc09164a0"
