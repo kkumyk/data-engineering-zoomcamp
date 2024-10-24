@@ -244,6 +244,7 @@ lugins - for custom plugins
     ```bash
     docker compose up airflow-init
     ```
+    - this is also created User with role Admin 
 3. <b>Run Airflow</b>
     ```bash
     docker compose up -d
