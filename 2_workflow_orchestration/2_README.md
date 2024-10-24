@@ -121,22 +121,153 @@ lugins - for custom plugins
 ### Prerequisites
 
 1. Rename the service account credentials JSON file to named google_credentials.json
-```bash
-cd ~
-mkdir -p ~/.google/credentials/
-mv /your/path/to-downloaded-file/google_credentials.json ~/.google/credentials/google_credentials.json
-```
+    ```bash
+    cd ~
+    mkdir -p ~/.google/credentials/
+    mv /your/path/to-downloaded-file/google_credentials.json ~/.google/credentials/google_credentials.json
+    ```
+2. <code>docker-compose</code> should be at least version v2.x+ and Docker Engine should have at least 5GB of RAM available, ideally 8GB. On Docker Desktop this can be changed in Preferences > Resources.
 
-## Ingesting Data to Local Postgres with Airflow
+    <summary>Upgrading Docker Compose to v2.x+ on Ubuntu 23.10 (see details below)
+        <details>
+
+    #### Upgrading Docker Compose to v2.x+ on Ubuntu 23.10
+    1. Remove installed <code>docker-compose</code>
+    - <code>docker-compose</code> binary was previously installed via a package manager (apt) and is located at:
+    ```bash
+    which docker-compose
+    /usr/bin/docker-compose
+    ``` 
+    - to remove it, run:
+    ```bash
+    sudo apt remove docker-compose
+    ```
+    2. Install Docker Compose v2.x as part of Docker Engine
+    - Docker Compose v2 is now distributed as part of Docker Engine, so we don't need to install it separately anymore. To get Docker Compose v2.x:
+        - install Docker Engine (if not installed):
+        ```bash
+        sudo apt-get update
+        sudo apt-get install \
+            ca-certificates \
+            curl \
+            gnupg \
+            lsb-release
+        ```
+        - add Docker's official GPG key:
+        ```bash
+        sudo mkdir -p /etc/apt/keyrings
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo tee /etc/apt/keyrings/docker.gpg > /dev/null
+        ```
+        - set up the repository:
+        ```bash
+        echo \
+            "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+            $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+        ```
+        - install Docker Engine, CLI, and Docker Compose:
+        ```bash
+        sudo apt-get update
+        sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+        ```
+        - verify installation by accessed using the new <code>docker compose</code> (with a space):
+        ```bash
+        docker compose version
+        ```
+    </details>
+</summary>
+
+2. Create a new <code>airflow</code> subdirectory in your work directory.
+
+### docker-compose.yaml update
+>>>> By following steps below you will create and update a docker-compose.yaml file to run that only runs the web server and the scheduler and runs the DAGs in the scheduler rather than running them in external workers:
+
+3. Download the official Docker-compose YAML file for the latest Airflow version. 
+    ```bash
+    curl -LfO 'https://airflow.apache.org/docs/apache-airflow/2.10.2/docker-compose.yaml'
+    ```
+4. [Set up the Airflow user](https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#setting-the-right-airflow-user) and create and <code>.env</code> with the appropriate UID (for all operating systems other than MacOS):
+    ```bash
+    echo -e "AIRFLOW_UID=$(id -u)" > .env
+    ```
+5. The base Airflow Docker image won't work with GCP. Adjust the file or download a GCP-ready Airflow Dockerfile from [this link]() TODO.
+
+6. Add requirements.txt file and add:
+    ```bash
+    apache-airflow-providers-google # allows Airflow using the GCP SDK
+    pyarrow # a library to work with parquet files
+    ```
+7. Alter the x-airflow-common service definition inside the docker-compose.yaml:
+    - point to our custom Docker image:
+        1. comment or delete the image field:
+            ```bash
+            # image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.10.2}
+            ```
+        2. uncomment the build line, or use the following (make sure you respect YAML indentation):
+            ```bash
+              build:
+                context: .
+                dockerfile: ./Dockerfile
+            ```
+        3. Add a volume and point it to the folder where you stored the credentials json file (see prerequisites section above):
+            ```bash
+            - ~/.google/credentials/:/.google/credentials:ro
+            ```
+        4. Add 2 new environment variables right after the others: GOOGLE_APPLICATION_CREDENTIALS and AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT:
+            ```bash
+            GOOGLE_APPLICATION_CREDENTIALS: /.google/credentials/google_credentials.json
+            AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT: 'google-cloud-platform://?extra__google_cloud_platform__key_path=/.google/credentials/google_credentials.json'
+            ```
+        5. Add 2 new additional environment variables for your GCP project ID and the GCP bucket that Terraform should have created in the previous lesson. You can find this info in your GCP project's dashboard:
+            ```bash
+            GCP_PROJECT_ID: '<your_gcp_project_id>'
+            GCP_GCS_BUCKET: '<your_bucket_id>'
+            ```Execution
+9. Change the AIRFLOW__CORE__EXECUTOR environment variable from CeleryExecutor to LocalExecutor.
+
+10. At the end of the x-airflow-common definition, within the depends-on block, remove these 2 lines:
+    ```yaml
+    redis:
+       condition: service_healthy
+    ```
+11. Comment out the AIRFLOW__CELERY__RESULT_BACKEND and AIRFLOW__CELERY__BROKER_URL environment variables.
+
+### Execution
+
+1. <b>Build the image (may take several minutes).</b> Only needs to be done when:
+    - running Airflow for first time,
+    - if you modified the Dockerfile or the requirements.txt file.
+
+    ```bash
+    docker compose build
+    ```
+2. <b>Initialize configs.</b>
+    ```bash
+    docker compose up airflow-init
+    ```
+3. <b>Run Airflow</b>
+    ```bash
+    docker compose up -d
+    ```
+4. Access the Airflow GUI by browsing to localhost:8080.
+    - Username and password are both airflow by default.
+
+
+<!-- ## Ingesting Data to Local Postgres with Airflow
 Main Goal:
 - Converting the ingestion script for loading data to Postgres to Airflow DAG
 
 Learning Sources:
 
-- [Ingesting Data to Local Postgres with Airflow](https://www.youtube.com/watch?v=s2U8MWJH5xA&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb)
+- [Ingesting Data to Local Postgres with Airflow](https://www.youtube.com/watch?v=s2U8MWJH5xA&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb) -->
 
 
+<!-- to log into the db
+ psql -h localhost -p 5432 -U taxi_driver -d ny_taxi -->
 
+<!-- TODOs:
+- two ingest files
+- update env with db creda library to work with parquet filesdata ingesting local: 55:43
+- combine containers in one network: 1:00 -->
 
 
 
