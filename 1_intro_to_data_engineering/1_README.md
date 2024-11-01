@@ -1,6 +1,25 @@
+Table of Contents:
 
-# TODO: ADD INDEX and links to videos
+[Introduction to Data Engineering](#1-creating-a-custom-pipeline-with-dockerintroduction-to-data-engineering)
 
+[Docker & Postgres](#docker--postgres)
+
+[Creating a Custom Pipeline with Docker](#creating-a-custom-pipeline-with-docker)
+
+[Running Postgres in a Docker Container](#2-running-postgres-in-a-docker-container)
+
+[Ingesting NY Trips Data to Postgres DB with Python](#3-ingesting-ny-trips-data-to-postgres-db-with-python)
+
+[Connecting pgAdmin and Postgres with Docker](#4-connecting-pgadmin-and-postgres-with-docker)
+
+[Putting the Ingestion Script ingest_data.py into Docker Container](#5-putting-the-ingestion-script-ingest_datapy-into-docker-container)
+
+[Running Postgres and pgAdmin with docker-compose.yaml](#6-running-postgres-and-pgadmin-with-docker-composeyaml)
+
+
+[Docker Networking and Port Mapping](#docker-networking-and-port-mapping)
+[SQL Refresher](#sql-refresher)
+[Terraform and Google Cloud Platform](#terraform-and-google-cloud-platform)
 
 # Introduction to Data Engineering
 
