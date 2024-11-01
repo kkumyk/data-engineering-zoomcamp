@@ -18,7 +18,9 @@ Table of Contents:
 
 
 [Docker Networking and Port Mapping](#docker-networking-and-port-mapping)
+
 [SQL Refresher](#sql-refresher)
+
 [Terraform and Google Cloud Platform](#terraform-and-google-cloud-platform)
 
 # Introduction to Data Engineering
