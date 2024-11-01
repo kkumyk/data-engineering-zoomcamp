@@ -142,10 +142,17 @@ airflow_local
     │   └── ingest_script_local.py
     ├── logs
     ├── scripts
+    │    ├── entrypoint.sh*
+    ├── .env
     ├── docker-compose.yaml
     ├── Dockerfile
     └── requirements.txt
 ```
+\* <i>entrypoint.sh</i>
+
+- contains the list of executables that will always run after the container is initiated
+- the exec line that executes webserver and scheduler has to be written so that both the exec commands are in one single line as splitting the two exec commands does not run the scheduler
+- airflow username and login details are the credentials used to log into airflow web UI.
 
 ### Running Airflow Locally via Docker
 1. Build docker compose image
@@ -205,13 +212,34 @@ airflow_local
 </br>
  -->
 
-#### Credits
+### DAGs
+
+#### Creating a DAG
+
+#### <i>ingest_script_local.py</i>
+- in this project we are interested in downloading a csv file containing New York Taxi data hosted [here](https://github.com/DataTalksClub/nyc-tlc-data/releases/) (originally available on the [New York Taxi website](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page)).
+- the script imports the dataset as an iterator;
+- it establishes a connection to the Postgres db and ingests the csv data into the database in chunks.
+
+#### <i>data_ingestion_local.py</i>
+- a dag file used by Airflow for workflow orchestration
+- two tasks specified in the script:
+    1. wget_task
+        - downloads the csv file into the home directory within the container that is running the scheduler; the downloaded file is then passed as an input into the ingest_task.
+    2. ingest_task
+        - the <i>ingest_script_local.py</i> script is imported into the <i>data_ingestion_local.py</i> dag to be used as a callable function within the ingest_task.
+
+### Credits
 - [Run Airflow via Docker on local machine using LocalExecutor](https://github.com/apuhegde/Airflow-LocalExecutor-In-Docker) by Apurva Hegde
 
 - [Ingesting Data to Local Postgres with Airflow](https://www.youtube.com/watch?v=s2U8MWJH5xA&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb) by DataTalkClub
 
+- [DE_Zoomcamp_week_2_data_ingestion
+/airflow/](https://github.com/DataTalksClub/data-engineering-zoomcamp/tree/4ecddc7ed8264b694136de2a6e84ce6f88401695/cohorts/2022/week_2_data_ingestion/airflow)
 
 
+
+ <!-- GCP: https://github.com/DataTalksClub/data-engineering-zoomcamp/blob/4ecddc7ed8264b694136de2a6e84ce6f88401695/cohorts/2022/week_2_data_ingestion/airflow/dags/data_ingestion_gcs_dag.py -->
 <!-- 
 ## Setting up Airflow with Docker
 
