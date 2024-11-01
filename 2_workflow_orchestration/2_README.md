@@ -115,7 +115,7 @@ lugins - for custom plugins
 - an individual run of a single task.
 - has an indicative state, which could be running, success, failed, skipped, up for retry, etc.
     - Ideally, a task should flow from none, to scheduled, to queued, to running, and finally to success.
-
+<!-- 
 ## Setting up Airflow with Docker
 
 ### Prerequisites
@@ -253,13 +253,50 @@ lugins - for custom plugins
     - Username and password are both airflow by default.
 
 
-<!-- ## Ingesting Data to Local Postgres with Airflow
-Main Goal:
-- Converting the ingestion script for loading data to Postgres to Airflow DAG
+## Ingesting Data to Local Postgres with Airflow
+### Tasks:
+- Run our Postgres setup (module 1) locally along with the Airflow container.
+- Use the ingest_data.py script (module 1) from a DAG to ingest the NYC taxi trip data to local Postgres.
+
+#### Airflow Container
+1. <strong>Prepare Ingestion Script.</strong>
+    - use code from ingest_data.py;
+    - wrap code inside ingest_callable();
+    - the script receives now params from Airflow to connect to the local DB (ingest_script.py);
+    - dockerize the script again with PythonOperator in our DAG (data_ingestion_local.py).
+    
+2. <strong>Prepare a DAG.</strong>
+
+    The DAG will have the following tasks:
+    1. A download BashOperator task: downloads the NYC taxi data.
+    2. A PythonOperator task: calls ingest script to populate local database.
+    3. Environment variables to connect to the local DB to be read from .env .
+
+- The dependencies specified in for the Airflow container should include those needed for the ingest_script.py file.
+
+- Build/Rebuild the Airflow image and start the Airflow container:
+    ```bash
+    docker compose build
+    docker compose up airflow-init
+    docker compose up
+    ```
+#### Local Postgres Container
+- On a separate terminal find out which virtual network it's running on (most likely <i>airflow_default</i>):
+    ```bash
+    docker network ls
+    ``` 
+- Modify the docker-compose.yaml file from module 1 by adding the network info and commenting away the pgAdmin service in order to reduce the amount of resources we will consume. 
+
+- Run the updated docker-compose-module2.yaml:
+    ```bash
+    docker compose -f docker-compose-module2.yaml up
+    ```
+    We need to explicitly call the file because we're using a non-standard name.
+ -->
 
 Learning Sources:
 
-- [Ingesting Data to Local Postgres with Airflow](https://www.youtube.com/watch?v=s2U8MWJH5xA&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb) -->
+- [Ingesting Data to Local Postgres with Airflow](https://www.youtube.com/watch?v=s2U8MWJH5xA&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb)
 
 
 <!-- to log into the db
@@ -274,6 +311,28 @@ Learning Sources:
 
 </br>
 </hr>
+
+## Issues Encountered
+
+1. Could not connect to the local Postgres DB
+
+Solution:
+```bash
+ps -ef | grep psql
+ps -ef | grep postgres
+less /etc/postgresql/15/main/postgresql.conf 
+netstat
+sudo apt install net-tools
+netstat -tulpn 
+sudo netstat -tulpn 
+sudo systemctl start postgresql
+sudo netstat -tulpn 
+```
+
+2. Cannot understand why we have two Postgres services running
+
+This might be a mistake: I've either overlooked the removal of one of the services from the tutorial or this was a mistake made in the tutorial.
+
 
 ## Learning Materials Used
 
