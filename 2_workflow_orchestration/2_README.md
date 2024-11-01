@@ -1,3 +1,8 @@
+Table of Contents:
+
+[Orchestration with Airflow](#orchestration-with-airflow)
+
+[ETL Using Airflow and Postgres in a Docker Container Locally](#etl-using-airflow-and-postgres-in-a-docker-container-locally)
 
 # Orchestration with Airflow
 
@@ -115,6 +120,98 @@ lugins - for custom plugins
 - an individual run of a single task.
 - has an indicative state, which could be running, success, failed, skipped, up for retry, etc.
     - Ideally, a task should flow from none, to scheduled, to queued, to running, and finally to success.
+
+
+## ETL Using Airflow and Postgres in a Docker Container Locally
+
+This project shows how to:
+1. run Airflow using LocalExecutor
+    - <i>the entire workflow is orchestrated using Airflow</i>
+2. download data from a website
+    - <i>a Python script downloads a .csv file from a website
+    - the Postgres db is accessed via pgAdmin</i>
+3. upload data to a Postgres database running in a Docker container
+    - <i>a Python script uploads downloaded data to a postgres db.</i>
+
+```bash
+# Project Structure
+
+airflow_local
+    ├── dags
+    │   ├── data_ingestion_local.py
+    │   └── ingest_script_local.py
+    ├── logs
+    ├── scripts
+    ├── docker-compose.yaml
+    ├── Dockerfile
+    └── requirements.txt
+```
+
+### Running Airflow Locally via Docker
+1. Build docker compose image
+
+    Make sure your Docker Desktop is running. From inside the airflow directory, build the <code>docker compose image</code>:
+
+    ```bash
+    docker compose build
+    ```
+2. Run docker-compose in detached mode:
+    ```bash
+    docker-compose up -d
+    ```
+    This spins up 4 containers:
+    - postgres database
+    - pgAdmin
+    - airflow webserver
+    - airflow scheduler
+
+    Verify with <code>docker ps</code> command.
+
+3. Open Airflow Web UI:
+    - type the port address in a web browser as specified in docker compose file
+    - log in with the credentials specified during the docker/airflow set up process in the <code>entrypoint.sh</code> file. E.g:
+        <i>
+        - localhost:8080
+        - user=admin
+        - password=admin</i>
+    
+    When you log in, your dag should show up on the home page. Click on the dag name and hit the little right-arrow icon on the right side to trigger dag. Your dag is now running.
+
+4. Inspect Your Postgres Database in pgAdmin
+    - log into pgAdmin in a browser using the port number and credentials you specified during docker/pgAdmin. E.g.:
+        <i>
+        - localhost:5050
+        - user=admin@admin.com
+        - password=root</i>
+    
+    - register a new server, login creds are those of the postgres db we specified in the <code>docker-compose yaml</code> via <code>.env</code> file:
+
+        <i>
+    - .env:
+        
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=postgres
+        - POSTGRES_DB=airflow
+
+    - creds for the server registration:
+        - host name / address: postgres (as the name of the service specified in docker compose file)
+        - user: postgres
+        - password: postgres
+        - db name: airflow </i>
+
+<!-- ### Files Used to Run Airflow via Docker Locally: -->
+
+<!-- </br>
+</br>
+ -->
+
+#### Credits
+- [Run Airflow via Docker on local machine using LocalExecutor](https://github.com/apuhegde/Airflow-LocalExecutor-In-Docker) by Apurva Hegde
+
+- [Ingesting Data to Local Postgres with Airflow](https://www.youtube.com/watch?v=s2U8MWJH5xA&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb) by DataTalkClub
+
+
+
 <!-- 
 ## Setting up Airflow with Docker
 
@@ -294,18 +391,10 @@ lugins - for custom plugins
     We need to explicitly call the file because we're using a non-standard name.
  -->
 
-Learning Sources:
-
-- [Ingesting Data to Local Postgres with Airflow](https://www.youtube.com/watch?v=s2U8MWJH5xA&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb)
 
 
-<!-- to log into the db
- psql -h localhost -p 5432 -U taxi_driver -d ny_taxi -->
 
-<!-- TODOs:
-- two ingest files
-- update env with db creda library to work with parquet filesdata ingesting local: 55:43
-- combine containers in one network: 1:00 -->
+
 
 
 
@@ -328,11 +417,6 @@ sudo netstat -tulpn
 sudo systemctl start postgresql
 sudo netstat -tulpn 
 ```
-
-2. Cannot understand why we have two Postgres services running
-
-This might be a mistake: I've either overlooked the removal of one of the services from the tutorial or this was a mistake made in the tutorial.
-
 
 ## Learning Materials Used
 
