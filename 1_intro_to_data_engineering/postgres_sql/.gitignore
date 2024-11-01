@@ -2,5 +2,6 @@
 yellow_tripdata.parquet
 zones.csv
 docker-compose.yaml
+docker-compose-module2.yaml
 data_pgadmin
 ny_taxi_postgres_data
