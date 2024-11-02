@@ -1,4 +1,3 @@
-
 import os
 import re
 import logging
@@ -10,7 +9,6 @@ from airflow.operators.python import PythonOperator
 from airflow.operators.bash import BashOperator
 
 from ingest_script_local import ingest_callable
-
 
 #set up logging
 logger = logging.getLogger(__name__)
@@ -43,6 +41,7 @@ with DAG('LocalIngestionDag',
          start_date=datetime(2021,1,1),
          schedule_interval="0 6 2 * *",
          catchup=False) as dag:
+    
     wget_task = BashOperator(
         task_id='wget',
         bash_command=f'curl -sSL {URL_TEMPLATE} > {OUTPUT_FILE_TEMPLATE}'

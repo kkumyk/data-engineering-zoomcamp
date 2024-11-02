@@ -1,4 +1,3 @@
-
 import logging 
 
 from time import time
@@ -40,7 +39,7 @@ def ingest_callable(user, password, host, port, db, table_name, csv_file):
     #create a new table in postgres with only the header information. This table will not contain any data rows yet
     df.head(n=0).to_sql(name=table_name, con=engine, if_exists='append')
 
-    #Now insert all the rows of the first chunk of dataset into the postgres table
+    #now insert all the rows of the first chunk of dataset into the postgres table
     df.to_sql(name=table_name, con=engine, if_exists='append')
 
     t_end = time()
