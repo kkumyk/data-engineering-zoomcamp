@@ -206,37 +206,86 @@ airflow_local
         - password: postgres
         - db name: airflow </i>
 
-<!-- ### Files Used to Run Airflow via Docker Locally: -->
-
-<!-- </br>
-</br>
- -->
-
 ### DAGs
 
 #### Creating a DAG
 
+- A DAG (Directed Acyclic Graph) is the core concept of Airflow, collecting Tasks together, organized with dependencies and relationships to say how they should run.
+- A DAG is created as a Python script which imports a series of libraries from Airflow.
+- There are 3 different ways of declaring a DAG. e.g.: using a context manager
+- When declaring a DAG we must provide at least a <code>dag_id</code> parameter. 
+- The content of the DAG is composed of tasks. The example <i>- a DAG created using a context manager - </i> contains 2 operators, which are predefined tasks provided by Airflow's libraries and plugins.
+    - An operator only has to be declared with any parameters that it may require.
+    - There is no need to define anything inside them.
+    - All operators must have at least a task_id parameter.
+    ```bash
+    with DAG(dag_id="my_dag_name") as dag:
+    op1 = DummyOperator(task_id="task1")
+    op2 = DummyOperator(task_id="task2")
+    op1 >> op2
+    ```
+- At the end of the definition we define the task dependencies, which is what ties the tasks together and defines the actual structure of the DAG.
+    - Task dependencies are primarily defined with the >> (downstream) and << (upstream) control flow operators.
+    - Additional functions are available for more complex control flow definitions.
+- A single Python script may contain multiple DAGs.
+
+#### Running a DAG
+- DAGs can be scheduled.
+- There are 2 main ways to run DAGs:
+    - triggering them manually via the web UI or via API;
+    - scheduling them.
+- When you trigger or schedule a DAG, a DAG instance is created, called a <strong>DAG run</strong>.
+- DAG runs can run in <strong>parallel for the same DAG</strong> for separate data intervals.
+
+#### Operators
+
+- Operators are components that define what action each task performs.
+
+- An Operator is conceptually a template for a predefined Task, that you can just define declaratively inside your DAG. ([Airflow documentation](https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/operators.html))
+
 #### <i>ingest_script_local.py</i>
-- in this project we are interested in downloading a csv file containing New York Taxi data hosted [here](https://github.com/DataTalksClub/nyc-tlc-data/releases/) (originally available on the [New York Taxi website](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page)).
+- in this project we are interested in downloading a csv file containing New York Taxi data hosted [here](https://github.com/DataTalksClub/nyc-tlc-data/releases/) (originally available on the [New York Taxi website](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page));
 - the script imports the dataset as an iterator;
 - it establishes a connection to the Postgres db and ingests the csv data into the database in chunks.
 
 #### <i>data_ingestion_local.py</i>
-- a dag file used by Airflow for workflow orchestration
-- two tasks specified in the script:
-    1. wget_task
-        - downloads the csv file into the home directory within the container that is running the scheduler; the downloaded file is then passed as an input into the ingest_task.
-    2. ingest_task
-        - the <i>ingest_script_local.py</i> script is imported into the <i>data_ingestion_local.py</i> dag to be used as a callable function within the ingest_task.
+- a dag file used by Airflow for workflow orchestration;
 
-### Credits
+##### Main DAG Components and Setup
+- the script is designed to run as an ETL pipeline;
+- <code>LocalIngestionDag</code> automates the process of downloading a dataset file and ingesting it into a PostgreSQL database:
+    - DAG Configuration:
+        - <code>start_date</code>: specifies when the DAG can start executing (January 1, 2021).
+        - <code>schedule_interval</code>: runs the DAG monthly on the 2nd day at 6 AM ("0 6 2 * *").
+        - <code>catchup=False</code>: disables backfilling, which would otherwise run the DAG for every interval since the start_date.
+- the script sets constants for the file to be downloaded - a compressed CSV file (*.csv.gz), representing NYC taxi data
+
+##### DAG Tasks and Workflow
+- two tasks specified in the script:
+    1. wget_task - data extraction
+        - downloads the csv file into the home directory within the container that is running the scheduler; the downloaded file is then passed as an input into the ingest_task.
+        - uses BashOperator* to download the CSV file from the URL (URL_TEMPLATE) to the specified output directory (OUTPUT_FILE_TEMPLATE).
+        
+            <i>\* BashOperator is useful for executing shell commands in Airflow.</i>
+    2. ingest_task - data loading
+        - the <i>ingest_script_local.py</i> script is imported into the <i>data_ingestion_local.py</i> dag to be used as a callable function within the ingest_task.
+        - PythonOperator is used in this DAG to call Python function ingest_callable directly within Airflow tasks.
+
+##### Task Dependency
+- The DAG’s task dependency is defined at the end with wget_task >> ingest_task, which ensures that ingest_task only runs after wget_task completes successfully.
+- This dependency reflects a common ETL pipeline pattern where data extraction occurs before ingestion/loading.
+
+### Credits & Further Reading:
 - [Run Airflow via Docker on local machine using LocalExecutor](https://github.com/apuhegde/Airflow-LocalExecutor-In-Docker) by Apurva Hegde
+
+- [Alvaro Navas' notes](https://github.com/ziritrion/dataeng-zoomcamp/blob/main/notes/2_data_ingestion.md#creating-a-dag)
 
 - [Ingesting Data to Local Postgres with Airflow](https://www.youtube.com/watch?v=s2U8MWJH5xA&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb) by DataTalkClub
 
 - [DE_Zoomcamp_week_2_data_ingestion
 /airflow/](https://github.com/DataTalksClub/data-engineering-zoomcamp/tree/4ecddc7ed8264b694136de2a6e84ce6f88401695/cohorts/2022/week_2_data_ingestion/airflow)
 
+- [Airflow documentation on ways to create DAGs](https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/dags.html)
 
 
  <!-- GCP: https://github.com/DataTalksClub/data-engineering-zoomcamp/blob/4ecddc7ed8264b694136de2a6e84ce6f88401695/cohorts/2022/week_2_data_ingestion/airflow/dags/data_ingestion_gcs_dag.py -->
