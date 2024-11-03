@@ -255,9 +255,11 @@ airflow_local
 - the script is designed to run as an ETL pipeline;
 - <code>LocalIngestionDag</code> automates the process of downloading a dataset file and ingesting it into a PostgreSQL database:
     - DAG Configuration:
-        - <code>start_date</code>: specifies when the DAG can start executing (January 1, 2021).
-        - <code>schedule_interval</code>: runs the DAG monthly on the 2nd day at 6 AM ("0 6 2 * *").
-        - <code>catchup=False</code>: disables backfilling, which would otherwise run the DAG for every interval since the start_date.
+        - <code>start_date</code>: specifies when the DAG can start. In this initial set up for using Airflow locally, we aim to upload data from a single csv file. We therefore setting up the start date to yesterday* ensuring it's close to the current time without triggering historical runs.
+
+            \* I've tested setting the start date to <i>today</i> but the DAG was not triggered properly. The reason for this is in Airflow's scheduling behavior: when it sees the start date set to yesterday, the DAGs start straight away as Airflow sees it as a scheduled run that was missed and needs to catch up even with the catchup param set to False. If the start date is set to today, Airflow sees the DAG run's scheduled interval as still in process, and will not trigger DAG straight away. This DAG will only trigger on the next interval. This delay can make it seem like the DAG isn't running. 
+        - <code>schedule_interval</code>: no recurring schedule for a one-time run
+        - <code>catchup=False</code>: disables backfilling, which would otherwise run the DAG for every interval since the start_date. As our start date is set to yesterday we do not require backfilling.
 - the script sets constants for the file to be downloaded - a compressed CSV file (*.csv.gz), representing NYC taxi data
 
 ##### DAG Tasks and Workflow
@@ -274,6 +276,18 @@ airflow_local
 ##### Task Dependency
 - The DAG’s task dependency is defined at the end with wget_task >> ingest_task, which ensures that ingest_task only runs after wget_task completes successfully.
 - This dependency reflects a common ETL pipeline pattern where data extraction occurs before ingestion/loading.
+
+##### DAG Run Results:
+
+Two green squares indicates a successful run. This will take a few minutes to complete, until then you will see the squares in the "running" state.
+
+
+<img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/2_workflow_orchestration/airflow_local/_doc/successeful_dag_run.png" alt="DAG run result in Airflow" width="200"/>
+
+<img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/2_workflow_orchestration/airflow_local/_doc/ingested_data_in_postgres.png" alt="Data added to local Postgres db via Airflow" width="200"/>
+
+
+
 
 ### Credits & Further Reading:
 - [Run Airflow via Docker on local machine using LocalExecutor](https://github.com/apuhegde/Airflow-LocalExecutor-In-Docker) by Apurva Hegde
