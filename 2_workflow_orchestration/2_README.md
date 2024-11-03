@@ -282,9 +282,10 @@ airflow_local
 Two green squares indicates a successful run. This will take a few minutes to complete, until then you will see the squares in the "running" state.
 
 
-<img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/2_workflow_orchestration/airflow_local/_doc/successeful_dag_run.png" alt="DAG run result in Airflow" width="200"/>
+<img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/2_workflow_orchestration/airflow_local/_doc/successeful_dag_run.png" alt="DAG run result in Airflow" width="600"/>
 
-<img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/2_workflow_orchestration/airflow_local/_doc/ingested_data_in_postgres.png" alt="Data added to local Postgres db via Airflow" width="200"/>
+The yellow_taxi table should be created and accessible even if the dag is still running:
+<img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/2_workflow_orchestration/airflow_local/_doc/ingested_data_in_postgres.png" alt="Data added to local Postgres db via Airflow" width="600"/>
 
 
 
