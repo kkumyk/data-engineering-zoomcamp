@@ -3,7 +3,7 @@ import re
 import logging
 
 from airflow import DAG
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from airflow.operators.python import PythonOperator
 from airflow.operators.bash import BashOperator
@@ -15,11 +15,11 @@ logger = logging.getLogger(__name__)
 
 AIRFLOW_HOME = os.environ.get("AIRFLOW_HOME", "/opt/airflow/")
 
-DATASET_FILE = "yellow_tripdata_2021-01.csv.gz"
+DATASET_FILE = "yellow_tripdata_2021-07.csv.gz"
 DATASET_DATE = re.sub('yellow_tripdata_', '', DATASET_FILE)
-URL_PREFIX = 'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow' 
+URL_PREFIX = 'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow'
+
 URL_TEMPLATE = f"{URL_PREFIX}/{DATASET_FILE}"
-#URL_TEMPLATE = URL_PREFIX + '/yellow_tripdata_{{ execution_date.strftime(\'%Y-%m\') }}.csv'
 OUTPUT_FILE_TEMPLATE = f'{AIRFLOW_HOME}/output_{DATASET_FILE}'
 TABLE_NAME_TEMPLATE = f'yellow_taxi_{DATASET_DATE}'
 
@@ -37,9 +37,9 @@ PG_DATABASE = os.getenv('POSTGRES_DB')
 logger.info('Passing PG_USER: %s, PG_PASSWORD: %s, PG_HOST: %s, PG_PORT: %s, PG_DATABASE: %s', 
             PG_USER, PG_PASSWORD, PG_HOST, PG_PORT, PG_DATABASE)
 
-with DAG('LocalIngestionDag', 
-         start_date=datetime(2021,1,1),
-         schedule_interval="0 6 2 * *",
+with DAG('LocalIngestionDag',
+         start_date=datetime.now() - timedelta(days=1),  # setting recent start_date
+         schedule_interval=None,  # no recurring schedule for a one-time run
          catchup=False) as dag:
     
     wget_task = BashOperator(
