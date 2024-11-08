@@ -1,7 +1,7 @@
 # Orchestration with Airflow
 ## Table of Contents:
 
-- [Ingesting Data to Local Postgres with Airflow](#etl-using-airflow-and-postgres-in-a-docker-container-locally)
+- [Ingesting Data to Local Postgres with Airflow](#ingesting-data-to-local-postgres-with-airflow)
 
 - [Ingesting Data to GCP](#ingesting-data-to-gcp)
 ## Introduction to Workflow Orchestration
