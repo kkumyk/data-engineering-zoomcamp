@@ -1,11 +1,9 @@
-Table of Contents:
-
-[Orchestration with Airflow](#orchestration-with-airflow)
-
-[ETL Using Airflow and Postgres in a Docker Container Locally](#etl-using-airflow-and-postgres-in-a-docker-container-locally)
-
 # Orchestration with Airflow
+## Table of Contents:
 
+- [Ingesting Data to Local Postgres with Airflow](#etl-using-airflow-and-postgres-in-a-docker-container-locally)
+
+- [Ingesting Data to GCP](#ingesting-data-to-gcp)
 ## Introduction to Workflow Orchestration
 
 How <b>NOT</b> to create a data pipeline:
@@ -121,91 +119,6 @@ lugins - for custom plugins
 - has an indicative state, which could be running, success, failed, skipped, up for retry, etc.
     - Ideally, a task should flow from none, to scheduled, to queued, to running, and finally to success.
 
-
-## ETL Using Airflow and Postgres in a Docker Container Locally
-
-This project shows how to:
-1. run Airflow using LocalExecutor
-    - <i>the entire workflow is orchestrated using Airflow</i>
-2. download data from a website
-    - <i>a Python script downloads a .csv file from a website
-    - the Postgres db is accessed via pgAdmin</i>
-3. upload data to a Postgres database running in a Docker container
-    - <i>a Python script uploads downloaded data to a postgres db.</i>
-
-```bash
-# Project Structure
-
-airflow_local
-    ├── dags
-    │   ├── data_ingestion_local.py
-    │   └── ingest_script_local.py
-    ├── logs
-    ├── scripts
-    │    ├── entrypoint.sh*
-    ├── .env
-    ├── docker-compose.yaml
-    ├── Dockerfile
-    └── requirements.txt
-```
-\* <i>entrypoint.sh</i>
-
-- contains the list of executables that will always run after the container is initiated
-- the exec line that executes webserver and scheduler has to be written so that both the exec commands are in one single line as splitting the two exec commands does not run the scheduler
-- airflow username and login details are the credentials used to log into airflow web UI.
-
-### Running Airflow Locally via Docker
-1. Build docker compose image
-
-    Make sure your Docker Desktop is running. From inside the airflow directory, build the <code>docker compose image</code>:
-
-    ```bash
-    docker compose build
-    ```
-2. Run docker-compose in detached mode:
-    ```bash
-    docker-compose up -d
-    ```
-    This spins up 4 containers:
-    - postgres database
-    - pgAdmin
-    - airflow webserver
-    - airflow scheduler
-
-    Verify with <code>docker ps</code> command.
-
-3. Open Airflow Web UI:
-    - type the port address in a web browser as specified in docker compose file
-    - log in with the credentials specified during the docker/airflow set up process in the <code>entrypoint.sh</code> file. E.g:
-        <i>
-        - localhost:8080
-        - user=admin
-        - password=admin</i>
-    
-    When you log in, your dag should show up on the home page. Click on the dag name and hit the little right-arrow icon on the right side to trigger dag. Your dag is now running.
-
-4. Inspect Your Postgres Database in pgAdmin
-    - log into pgAdmin in a browser using the port number and credentials you specified during docker/pgAdmin. E.g.:
-        <i>
-        - localhost:5050
-        - user=admin@admin.com
-        - password=root</i>
-    
-    - register a new server, login creds are those of the postgres db we specified in the <code>docker-compose yaml</code> via <code>.env</code> file:
-
-        <i>
-    - .env:
-        
-        - POSTGRES_USER=postgres
-        - POSTGRES_PASSWORD=postgres
-        - POSTGRES_DB=airflow
-
-    - creds for the server registration:
-        - host name / address: postgres (as the name of the service specified in docker compose file)
-        - user: postgres
-        - password: postgres
-        - db name: airflow </i>
-
 ### DAGs
 
 #### Creating a DAG
@@ -277,35 +190,7 @@ airflow_local
 - The DAG’s task dependency is defined at the end with wget_task >> ingest_task, which ensures that ingest_task only runs after wget_task completes successfully.
 - This dependency reflects a common ETL pipeline pattern where data extraction occurs before ingestion/loading.
 
-##### DAG Run Results:
-
-Two green squares indicates a successful run. This will take a few minutes to complete, until then you will see the squares in the "running" state.
-
-
-<img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/2_workflow_orchestration/airflow_local/_doc/successeful_dag_run.png" alt="DAG run result in Airflow" width="600"/>
-
-The yellow_taxi table should be created and accessible even if the dag is still running:
-<img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/2_workflow_orchestration/airflow_local/_doc/ingested_data_in_postgres.png" alt="Data added to local Postgres db via Airflow" width="600"/>
-
-
-
-
-### Credits & Further Reading:
-- [Run Airflow via Docker on local machine using LocalExecutor](https://github.com/apuhegde/Airflow-LocalExecutor-In-Docker) by Apurva Hegde
-
-- [Alvaro Navas' notes](https://github.com/ziritrion/dataeng-zoomcamp/blob/main/notes/2_data_ingestion.md#creating-a-dag)
-
-- [Ingesting Data to Local Postgres with Airflow](https://www.youtube.com/watch?v=s2U8MWJH5xA&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb) by DataTalkClub
-
-- [DE_Zoomcamp_week_2_data_ingestion
-/airflow/](https://github.com/DataTalksClub/data-engineering-zoomcamp/tree/4ecddc7ed8264b694136de2a6e84ce6f88401695/cohorts/2022/week_2_data_ingestion/airflow)
-
-- [Airflow documentation on ways to create DAGs](https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/dags.html)
-
-
- <!-- GCP: https://github.com/DataTalksClub/data-engineering-zoomcamp/blob/4ecddc7ed8264b694136de2a6e84ce6f88401695/cohorts/2022/week_2_data_ingestion/airflow/dags/data_ingestion_gcs_dag.py -->
-<!-- 
-## Setting up Airflow with Docker
+## Ingesting Data to Local Postgres with Airflow
 
 ### Prerequisites
 
@@ -315,7 +200,7 @@ The yellow_taxi table should be created and accessible even if the dag is still 
     mkdir -p ~/.google/credentials/
     mv /your/path/to-downloaded-file/google_credentials.json ~/.google/credentials/google_credentials.json
     ```
-2. <code>docker-compose</code> should be at least version v2.x+ and Docker Engine should have at least 5GB of RAM available, ideally 8GB. On Docker Desktop this can be changed in Preferences > Resources.
+2. <code>docker compose</code> should be at least version v2.x+ and Docker Engine should have at least 5GB of RAM available, ideally 8GB. On Docker Desktop this can be changed in Preferences > Resources.
 
     <summary>Upgrading Docker Compose to v2.x+ on Ubuntu 23.10 (see details below)
         <details>
@@ -365,19 +250,109 @@ The yellow_taxi table should be created and accessible even if the dag is still 
     </details>
 </summary>
 
-2. Create a new <code>airflow</code> subdirectory in your work directory.
 
-### docker-compose.yaml update
->>>> By following steps below you will create and update a docker-compose.yaml file to run that only runs the web server and the scheduler and runs the DAGs in the scheduler rather than running them in external workers:
-
-3. Download the official Docker-compose YAML file for the latest Airflow version. 
-    ```bash
-    curl -LfO 'https://airflow.apache.org/docs/apache-airflow/2.10.2/docker-compose.yaml'
-    ```
-4. [Set up the Airflow user](https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#setting-the-right-airflow-user) and create and <code>.env</code> with the appropriate UID (for all operating systems other than MacOS):
+3. [Set up the Airflow user](https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#setting-the-right-airflow-user) and create and <code>.env</code> with the appropriate UID (for all operating systems other than MacOS):
     ```bash
     echo -e "AIRFLOW_UID=$(id -u)" > .env
     ```
+
+This project shows how to:
+1. run Airflow using LocalExecutor
+    - <i>the entire workflow is orchestrated using Airflow</i>
+2. download data from a website
+    - <i>a Python script downloads a .csv file from a website
+    - the Postgres db is accessed via pgAdmin</i>
+3. upload data to a Postgres database running in a Docker container
+    - <i>a Python script uploads downloaded data to a postgres db.</i>
+
+```bash
+# Project Structure
+
+airflow_local
+    ├── dags
+    │   ├── data_ingestion_local.py
+    │   └── ingest_script_local.py
+    ├── logs
+    ├── scripts
+    │    ├── entrypoint.sh*
+    ├── .env
+    ├── docker-compose.yaml
+    ├── Dockerfile
+    └── requirements.txt
+```
+\* <i>entrypoint.sh</i>
+
+- contains the list of executables that will always run after the container is initiated
+<!-- - the exec line that executes webserver and scheduler has to be wri### DAGs -->
+
+
+### Running Airflow Locally via Docker
+1. Build docker compose image
+
+    Make sure your Docker Desktop is running. From inside the airflow directory, build the <code>docker compose image</code>:
+
+    ```bash
+    docker compose build
+    ```
+2. Run docker-compose in detached mode:
+    ```bash
+    docker compose up -d
+    ```
+    This spins up 4 containers:
+    - postgres database
+    - pgAdmin
+    - airflow webserver
+    - airflow scheduler
+
+    Verify with <code>docker ps</code> command.
+
+3. Open Airflow Web UI:
+    - type the port address in a web browser as specified in docker compose file
+    - log in with the credentials specified during the docker/airflow set up process in the <code>entrypoint.sh</code> file. E.g:
+        <i>
+        - localhost:8080
+        - user=admin
+        - password=admin</i>
+    
+    When you log in, your dag should show up on the home page. Click on the dag name and hit the little right-arrow icon on the right side to trigger dag. Your dag is now running.
+
+4. Inspect Your Postgres Database in pgAdmin
+    - log into pgAdmin in a browser using the port number and credentials you specified during docker/pgAdmin. E.g.:
+        <i>
+        - localhost:5050
+        - user=admin@admin.com
+        - password=root</i>
+    
+    - register a new server, login creds are those of the postgres db we specified in the <code>docker-compose yaml</code> via <code>.env</code> file:
+
+        <i>
+    - .env:
+        
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=postgres
+        - POSTGRES_DB=airflow
+
+    - creds for the server registration:
+        - host name / address: postgres (as the name of the service specified in docker compose file)
+        - user: postgres
+        - password: postgres
+        - db name: airflow </i>
+
+
+##### DAG Run Results:
+
+Two green squares indicates a successful run. This will take a few minutes to complete, until then you will see the squares in the "running" state.
+
+
+<img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/2_workflow_orchestration/airflow_local/_doc/successeful_dag_run.png" alt="DAG run result in Airflow" width="600"/>
+
+The yellow_taxi table should be created and accessible even if the dag is still running:
+
+<img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/2_workflow_orchestration/airflow_local/_doc/ingested_data_in_postgres.png" alt="Data added to local Postgres db via Airflow" width="600"/>
+
+
+
+<!-- 
 5. The base Airflow Docker image won't work with GCP. Adjust the file or download a GCP-ready Airflow Dockerfile from [this link]() TODO.
 
 6. Add requirements.txt file and add:
@@ -413,12 +388,7 @@ The yellow_taxi table should be created and accessible even if the dag is still 
             ```Execution
 9. Change the AIRFLOW__CORE__EXECUTOR environment variable from CeleryExecutor to LocalExecutor.
 
-10. At the end of the x-airflow-common definition, within the depends-on block, remove these 2 lines:
-    ```yaml
-    redis:
-       condition: service_healthy
-    ```
-11. Comment out the AIRFLOW__CELERY__RESULT_BACKEND and AIRFLOW__CELERY__BROKER_URL environment variables.
+
 
 ### Execution
 
@@ -469,6 +439,8 @@ The yellow_taxi table should be created and accessible even if the dag is still 
     docker compose up airflow-init
     docker compose up
     ```
+
+
 #### Local Postgres Container
 - On a separate terminal find out which virtual network it's running on (most likely <i>airflow_default</i>):
     ```bash
@@ -483,19 +455,44 @@ The yellow_taxi table should be created and accessible even if the dag is still 
     We need to explicitly call the file because we're using a non-standard name.
  -->
 
+<hr>
 
+## Ingesting Data to GCP
+We will now run a slightly more complex DAG that will download the NYC taxi trip data, convert it to parquet, upload it to a GCP bucket and ingest it to GCP's BigQuery.
 
+In this first attempt of ingesting data to GCP the goal is to load a single table.
 
+1. The contents of your .env should be:
+    ```.env
+    AIRFLOW_UID=
+    GCP_PROJECT_ID=
+    GCP_GCS_BUCKET=
+    GOOGLE_APPLICATION_CREDENTIALS: /.google/credentials/google_credentials.json
+    ```
+2. Make sure BigQuery API is enabled for your project.
+3. Make sure you create a folder in the BigQuery UI for the dataset you want to upload using the name in the data_ingestion_gcs.py <code>("BIGQUERY_DATASET", 'trips_data_all')</code>. Based on [these instructions](https://github.com/ziritrion/dataeng-zoomcamp/blob/main/notes/2_data_ingestion.md#ingesting-data-to-gcp), "you should see a new trips_data_all database with an external_table table" automatically after running the docker container. This did not work for me. Only after manually creating a 'trips_data_all' folder and then running the Docker container the data was ingested to the GCP's BigQuery.
+4. If not started, run Airflow with:
+    ```bash
+    docker compose build
+    docker compose up airflow-init
+    docker compose up
+    ``` 
+5. Open Airflow's UI at localhost:8080 and log in with <i>admin/admin</i> as specified in your docker-compose.yaml file.
+6. Select the DAG from Airflow's dashboard and trigger it.
 
+<img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/2_workflow_orchestration/airflow_gcp/_doc/successeful_dag_run.png" alt="DAG run result in Airflow" width="600"/>
 
+7. Once the DAG finishes, you can go to your GCP project's dashboard and search for BigQuery. You should see your project ID and an <code>external table</code> in your <code>trips_data_all</code> database:
 
+<img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/2_workflow_orchestration/airflow_gcp/_doc/external_table_gcp.png" alt="DAG run result in Airflow" width="600"/>
 
+8. Shutdown Airflow by running <code>docker compose down</code> on the terminal.
 </br>
 </hr>
 
-## Issues Encountered
+## Issues Encountered (Local Setup)
 
-1. Could not connect to the local Postgres DB
+Could not connect to the local Postgres DB
 
 Solution:
 ```bash
@@ -510,7 +507,65 @@ sudo systemctl start postgresql
 sudo netstat -tulpn 
 ```
 
-## Learning Materials Used
+## Issues Encountered (GCP Setup)
+Error Reported in Airflow Logs:
+
+<code>google.api_core.exceptions.NotFound: 404 POST https://bigquery.googleapis.com/bigquery/v2/projects/.../datasets/trips_data_all/tables?prettyPrint=false: Not found: Dataset ...:trips_data_all></code>
+
+```js
+{
+"error": {
+    "code": 401,
+    "message": "Request is missing required authentication credential. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.",
+    "errors": [
+    {
+    "message": "Login Required.",
+    "domain": "global",
+    "reason": "required",
+    "location": "Authorization",
+    "locationType": "header"
+    }
+    ],
+    "status": "UNAUTHENTICATED",
+    "details": [
+    {
+    "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+    "reason": "CREDENTIALS_MISSING",
+    "domain": "googleapis.com",
+    "metadata": {
+    "method": "google.cloud.bigquery.v2.TableService.ListTables",
+    "service": "bigquery.googleapis.com"
+    }
+    }
+    ]
+    }
+}
+```
+Solution:
+
+Even though the API response is flagging "a valid OAuth 2.0 token, service account credentials, or some other authorized credential is missing", the real reason for not being able to ingest data into the BigQuery is because the 'trips_data_all' folder had to be created in the UI. As DAG could not find it, it was flagging the missing credentials error.
+</br>
+</hr>
+
+### Credits and Learning Materials Used:
+[DE_Zoomcamp_week_2_data_ingestion
+/airflow/](https://github.com/DataTalksClub/data-engineering-zoomcamp/tree/4ecddc7ed8264b694136de2a6e84ce6f88401695/cohorts/2022/week_2_data_ingestion/airflow)
+
+[Ingesting Data to Local Postgres with Airflow](https://www.youtube.com/watch?v=s2U8MWJH5xA&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb) by DataTalkClub
+
+[Airflow-CeleryExecutor-GCS-Docker (GCP)](https://github.com/apuhegde/Airflow-CeleryExecutor-GCS-Docker)
+[nadyinky|ny_taxi_rides (GCP)](https://github.com/nadyinky/ny_taxi_rides/tree/main)
+
+[BrightOsas|NYC-Taxi-Trip-Data-Pipeline (Local)](https://github.com/BrightOsas/NYC-Taxi-Trip-Data-Pipeline)
+
+[Run Airflow via Docker on local machine using LocalExecutor](https://github.com/apuhegde/Airflow-LocalExecutor-In-Docker) by Apurva Hegde
+
+[Airflow documentation on ways to create DAGs](https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/dags.html)
+
+
+<!-- 2_README_airflow_localring-zoomcamp/blob/4ecddc7ed8264b694136de2a6e84ce6f88401695/cohorts/2022/week_2_data_ingestion/airflow/dags/
+
+data_ingestion_gcs_dag.py -->
 
 [Data Ingestion](https://github.com/DataTalksClub/data-engineering-zoomcamp/tree/main/cohorts/2022/week_2_data_ingestion)
 [Introduction to Workflow Orchestration](https://www.youtube.com/watch?v=0yK7LXwYeD0&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=18) (video)
