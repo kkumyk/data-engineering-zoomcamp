@@ -117,8 +117,7 @@ SELECT * FROM taxi-rides-ny.nytaxi.external_yellow_tripdata;
 ```
 
 ### Partitions
-- [video source 1](https://www.youtube.com/watch?v=jrHljAoD6nM&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=26)
-- [video source 2](https://www.youtube.com/watch?v=-CqXf7vhhDs&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=27)
+[video source 1](https://www.youtube.com/watch?v=jrHljAoD6nM&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=26) and [video source 2](https://www.youtube.com/watch?v=-CqXf7vhhDs&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=27)
 
 BQ tables can be partitioned into multiple smaller tables. E.g., if we often filter queries based on date, we could partition a table based on date so that we only query a specific sub-table based on the date we're interested in.
 
@@ -142,6 +141,112 @@ PARTITION BY
 SELECT * FROM taxi-rides-ny.nytaxi.external_yellow_tripdata;
 ```
 BQ will identify partitioned tables with a specific icon. The <i>Details</i> tab of the table will specify the field which was used for partitioning the table and its datatype.
+
+
+### Clustering
+
+[video source 1](https://www.youtube.com/watch?v=jrHljAoD6nM&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=27) and 
+[video source 2](https://www.youtube.com/watch?v=-CqXf7vhhDs&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=27)
+
+- consists of rearranging a table based on the values of its columns so that the table is ordered according to any criteria
+- can be done based on one or multiple columns up to 4
+- the order of the columns in which clustering is specified is important in order to determine the column priority
+- may improve performance and lower costs on big datasets for certain types of queries, such as queries that use filter clauses and queries that aggregate data
+
+<strong><i>Please note</i></strong>:
+- tables with less than 1GB don't show significant improvement with partitioning and clustering;
+- doing so in a small table could even lead to increased cost due to the additional metadata reads and maintenance needed for these features.
+
+Clustering columns must be top-level, non-repeated columns. The following data types are supported:
+- DATE
+- BOOL
+- GEOGRAPHY
+- INT64
+- NUMERIC
+- BIGNUMERIC
+- STRING
+- TIMESTAMP
+- DATETIME
+
+A partitioned table can also be clustered.
+
+### Partitioning vs Clustering in BQ
+[video source](https://www.youtube.com/watch?v=-CqXf7vhhDs&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=27)
+<table>
+<thead>
+<tr>
+<th>Clustering</th>
+<th>Partitioning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cost benefit unknown. BQ cannot estimate the reduction in cost before running a query.</td>
+<td>Cost known upfront. BQ can estimate the amount of data to be processed before running a query.</td>
+</tr>
+<tr>
+<td>High granularity. Multiple criteria can be used to sort the table.</td>
+<td>Low granularity. Only a single column can be used to partition the table.</td>
+</tr>
+<tr>
+<td>Clusters are "fixed in place".</td>
+<td>Partitions can be added, deleted, modified or even moved between storage options.</td>
+</tr>
+<tr>
+<td>Benefits from queries that commonly use filters or aggregation against multiple particular columns.</td>
+<td>Benefits when you filter or aggregate on a single column.</td>
+</tr>
+<tr>
+<td>Unlimited amount of clusters; useful when the cardinality of the number of values in a column or group of columns is large.</td>
+<td>Limited to 4000 partitions; cannot be used in columns with larger cardinality.</td>
+</tr>
+</tbody>
+</table>
+
+<i><strong>Choose clustering over partitioning when</i></strong>:
+- partitioning results in a small amount of data per partition
+- partitioning would result in over 4000 partitions
+- if your mutation operations modify the majority of partitions in the table frequently (for example, writing to the table every few minutes and writing to most of the partitions each time rather than just a handful)
+
+BQ has <i><strong>automatic reclustering</i></strong>: when new data is written to a table, it can be written to blocks that contain key ranges that overlap with the key ranges in previously written blocks, which weaken the sort property of the table. BQ will perform automatic reclustering in the background to restore the sort properties of the table.
+
+For partitioned tables, clustering is maintained for data within the scope of each partition.
+
+### BQ's Best Practices
+[video source](https://www.youtube.com/watch?v=k81mLJVX08w&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=28)
+
+Here is a [list of best practices for BQ](https://cloud.google.com/bigquery/docs/best-practices-performance-overview):
+
+<strong> I. Cost reduction</strong>
+
+- Avoid <code>SELECT *</code>. Reducing the amount of columns to display will drastically reduce the amount of processed data and lower costs.
+- Price your queries before running them.
+- Use clustered and/or partitioned tables if possible.
+- Use [streaming inserts](https://cloud.google.com/bigquery/docs/streaming-data-into-bigquery) with caution. They can easily increase cost.
+- [Materialize query results](https://cloud.google.com/bigquery/docs/materialized-views-intro) in different stages.
+
+<strong> II. Query performance</strong>
+
+- Filter on partitioned columns.
+- [Denormalize data](https://cloud.google.com/blog/topics/developers-practitioners/bigquery-explained-working-joins-nested-repeated-data).
+- Use [nested or repeated columns](https://cloud.google.com/blog/topics/developers-practitioners/bigquery-explained-working-joins-nested-repeated-data).
+- Use external data sources appropriately. Constantly reading data from a bucket may incur in additional costs and has worse performance.
+- Reduce data before using a JOIN.
+- Do not threat <code>WITH</code> clauses as [prepared statements](https://www.wikiwand.com/en/articles/Prepared_statement).
+- Avoid [oversharding tables](https://cloud.google.com/bigquery/docs/partitioned-tables#dt_partition_shard).
+- Avoid JavaScript user-defined functions.
+- Use [approximate aggregation functions](https://cloud.google.com/bigquery/docs/reference/standard-sql/approximate_aggregate_functions) rather than complete ones such as [HyperLogLog++](https://cloud.google.com/bigquery/docs/reference/standard-sql/hll_functions).
+- Order statements should be the last part of the query.
+- [Optimize join patterns](https://cloud.google.com/bigquery/docs/best-practices-performance-compute#optimize_your_join_patterns).
+- Place the table with the <i>largest</i> number of rows first, followed by the table with the <i>fewest</i> rows, and then place the remaining tables by decreasing size.
+This is due to how BigQuery works internally: the first table will be distributed evenly and the second table will be broadcasted to all the nodes. Check the Internals section for more details. This is due to how BigQuery works internally: the first table will be distributed evenly and the second table will be broadcasted to all the nodes. Check the Internals section for more details.
+
+## Integrating BigQuery with Airflow
+We will now use Airflow to automate the creation of BQ tables, both normal and partitioned.
+
+
+
+
 
 
 ## Learning Material Used
