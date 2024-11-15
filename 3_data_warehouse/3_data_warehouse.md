@@ -1,6 +1,23 @@
 # Data Warehouse and BigQuery
 
-## Table of contents
+- [Data Warehouse and BigQuery](#data-warehouse-and-bigquery)
+  - [OLAP vs OLTP](#olap-vs-oltp)
+  - [BigQuery](#bigquery)
+    - [Pricing](#pricing)
+    - [External tables](#external-tables)
+    - [Partitions](#partitions)
+    - [Clustering](#clustering)
+    - [Partitioning vs Clustering in BQ](#partitioning-vs-clustering-in-bq)
+    - [BigQuery's Best Practices](#bigquerys-best-practices)
+  - [Integrating BigQuery with Airflow](#integrating-bigquery-with-airflow)
+    - [Airflow Setup](#airflow-setup)
+    - [Components of the gcs\_2\_bq\_dag.py DAG](#components-of-the-gcs_2_bq_dagpy-dag)
+      - [Tasks](#tasks)
+      - [What Exactly Does This DAG Do?](#what-exactly-does-this-dag-do)
+    - [DAG's Execution \& The Output Tables](#dags-execution--the-output-tables)
+  - [Learning Material Used](#learning-material-used)
+
+<!-- TOC -->
 
 
 ## OLAP vs OLTP
@@ -92,6 +109,7 @@ Pricing divided in 2 main components:
 <i>When running queries on BQ, the top-right corner of the window will display an approximation of the size of the data that will be processed by the query. Once the query has run, the actual amount of processed data will appear in the Query results panel in the lower half of the window. This can be useful to quickly calculate the cost of the query.</i>
 
 ### External tables
+
 An <strong>external table</strong> is a table that acts like a standard BQ table. The table metadata (such as the schema) is stored in BQ storage but the data itself is external.
 
 BQ supports a few [external data sources](https://cloud.google.com/bigquery/docs/external-data-sources): you may query these sources directly from BigQuery even though the data itself isn't stored in BQ.
@@ -133,7 +151,7 @@ tables may be partitioned by:
 
 Please note, BQ limits the amount of partitions to 4000 per table. If you need more partitions, consider clustering as well.
 
-Here's an example query for creating a partitioned table:
+Here's an example query for creating a [partitioned table](https://cloud.google.com/bigquery/docs/partitioned-tables?_gl=1*z2wu5*_ga*MTM5MDIyMzM4Ny4xNzE5ODQwNjYw*_ga_WH2QY8WWF5*MTczMTY3Nzg4Ni4zNS4xLjE3MzE2Nzg0ODUuMzguMC4w):
 ```sql
 CREATE OR REPLACE TABLE taxi-rides-ny.nytaxi.yellow_tripdata_partitoned
 PARTITION BY
@@ -141,7 +159,6 @@ PARTITION BY
 SELECT * FROM taxi-rides-ny.nytaxi.external_yellow_tripdata;
 ```
 BQ will identify partitioned tables with a specific icon. The <i>Details</i> tab of the table will specify the field which was used for partitioning the table and its datatype.
-
 
 ### Clustering
 
@@ -212,7 +229,7 @@ BQ has <i><strong>automatic reclustering</i></strong>: when new data is written 
 
 For partitioned tables, clustering is maintained for data within the scope of each partition.
 
-### BQ's Best Practices
+### BigQuery's Best Practices
 [video source](https://www.youtube.com/watch?v=k81mLJVX08w&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=28)
 
 Here is a [list of best practices for BQ](https://cloud.google.com/bigquery/docs/best-practices-performance-overview):
@@ -244,10 +261,86 @@ This is due to how BigQuery works internally: the first table will be distribute
 ## Integrating BigQuery with Airflow
 We will now use Airflow to automate the creation of BQ tables, both normal and partitioned.
 
+### Airflow Setup
 
+Docker files, requirements.txt and env files used as they were in the [airflow_gcp](https://github.com/kkumyk/data-engineering-zoomcamp/tree/main/2_workflow_orchestration/airflow_gcp) part of the previous module.
 
+### Components of the gcs_2_bq_dag.py DAG
 
+#### Tasks
+1.  the <code>gcs_2_gcs</code> task reorganizes the files within the Data Lake for easier processing.
+    - uses <code>[GCSToGCSOperator](https://airflow.apache.org/docs/apache-airflow-providers-google/stable/_api/airflow/providers/google/cloud/transfers/gcs_to_gcs/index.html)</code> that moves files from one location in a GCS bucket to another
+<!-- We want to move multiple files. We will need to define the source bucket and objects as well as the destination bucket and objects.
+Both the source and destination buckets will be the same bucket we defined in lesson 2.
+Use f strings to change the source and destination object names on each loop.
+You may use the wildcard * in the source object filename, but be aware that every character before the wildcard will be removed from the destination object filename.
+The destination object filename can be thought of as the prefix to be added to the source object filename. -->
+2. the <code>gcs_2_bq_ext</code> task creates the external tables based on the Data Lake files.
+    - uses <code>[BigQueryCreateExternalTableOperator](https://airflow.apache.org/docs/apache-airflow-providers-google/stable/_api/airflow/providers/google/cloud/operators/bigquery/index.html#airflow.providers.google.cloud.operators.bigquery.BigQueryCreateExternalTableOperator)</code> that creates an external table
+<!-- The original code block let BQ decide the schema of the external table by infering from the input file with the externalDataConfiguration dict. It's possible to provide a schema if you know it beforehand; check the documentation for more info.
+Other than the task_id, this task is essentially the same code as last session's. -->
+3. the <code>bq_ext_2_part</code> task creates a partitioned table from the external tables.
+    - uses <code>[BigQueryInsertJobOperator](https://airflow.apache.org/docs/apache-airflow-providers-google/stable/_api/airflow/providers/google/cloud/operators/bigquery/index.html#airflow.providers.google.cloud.operators.bigquery.BigQueryInsertJobOperator)</code> that creates a partitioned table
+    <!-- The operator needs a dict for the configuration parameter which needs to contain a SQL query. We will use a very similar query to the one we used in the partitions section to create a table -->
 
+    ```py
+    gcs_2_gcs_task >> gcs_2_bq_ext_task >> bq_ext_2_part_task
+    ```
+
+#### What Exactly Does This DAG Do?
+This DAG is designed to automate the process of <i><strong>moving data from Google Cloud Storage (GCS) to BigQuery</strong></i>.
+
+1. It moves files from GCS to GCS:
+   - the <code>GCSToGCSOperator</code> is used to move files from one location in a GCS bucket to another;
+   <!-- The files are organized by taxi_type, and the source_object pattern ({taxi_type}_*) suggests it is dealing with different types of taxi data (e.g., Yellow, FHV, Green) that may have varying file formats or naming conventions. -->
+
+2. It creates an external table in BigQuery:
+    - the <code>BigQueryCreateExternalTableOperator</code> creates an external table in BigQuery, pointing to the files in GCS that were moved in the first step.
+        <!-- The external table uses Parquet as its source format and autodetects the schema based on the files. -->
+    - the external table is used to query the data without loading it into BigQuery. 
+3. It partitions data in BigQuery:
+    - <code>BigQueryInsertJobOperator</code> runs a SQL query that creates a partitioned table in BigQuery, based on a column (ds_col) that depends on the taxi_type.
+        <!-- For example:
+            For Yellow Taxi data, it uses the column tpep_pickup_datetime.
+            For FHV data, it uses Pickup_datetime.
+            For Green Taxi data, it uses lpep_pickup_datetime.
+        The partitioning is done on the date (PARTITION BY DATE(...)), so this query creates a partitioned table where the data is divided by the pickup date (as indicated by the relevant column for each taxi type). -->
+
+### DAG's Execution & The Output Tables
+
+1. Build the image:
+  ```shell
+  docker compose build 
+  ```
+  You only need to do this the first time you run Airflow or if you modified the Dockerfile or the requirements.txt file.
+
+2. Initialize configs:
+```shell
+docker compose up airflow-init
+```
+3. Run Airflow in a detached mode
+```shell
+docker compose up -d
+```
+4. Open Airflow GUI by browsing to localhost:8080. Username and password are both airflow.
+
+  ```shell
+  # IMPORTANT: this is NOT a production-ready setup! The username and password for Airflow have not been modified in any way; you can find them by searching for _AIRFLOW_WWW_USER_USERNAME and _AIRFLOW_WWW_USER_PASSWORD inside the docker-compose.yaml file.
+  ```
+5. Run your DAG on the Web Console.
+
+<img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/3_data_warehouse/_doc/gcs_2_bq_dag_run_results.png" alt="DAG run result in Airflow" width="600"/>
+
+6. The output result of running the DAG are two tables:
+  - a normal external table: <i>yellow_tripdata_external_table</i>
+  - a partitioned table: <i>yellow_tripdata</i>
+
+<img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/3_data_warehouse/_doc/gcs_to_bg_results.png" alt="DAG run result in Airflow" width="600"/>
+
+7. On finishing your run or to shut down the container/s:
+  ```shell
+  docker compose down -v  
+  ```
 
 ## Learning Material Used
 - [Data Warehouse and BigQuery](https://github.com/DataTalksClub/data-engineering-zoomcamp/tree/main/03-data-warehouse)
