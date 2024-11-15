@@ -1,9 +1,31 @@
+<!-- TOF -->
+<strong>Table of Contents:</strong>
+- [Orchestration with Airflow](#orchestration-with-airflow)
+  - [Introduction to Workflow Orchestration](#introduction-to-workflow-orchestration)
+  - [What is Apache Airflow?](#what-is-apache-airflow)
+    - [Workflows as code](#workflows-as-code)
+    - [Fundamental Concepts and Terminology](#fundamental-concepts-and-terminology)
+  - [Airflow Architecture](#airflow-architecture)
+    - [DAGs Examples For Local Data Ingesting](#dags-examples-for-local-data-ingesting)
+      - [Creating a DAG](#creating-a-dag)
+      - [Running a DAG](#running-a-dag)
+      - [Operators](#operators)
+      - [ingest\_script\_local.py](#ingest_script_localpy)
+      - [data\_ingestion\_local.py](#data_ingestion_localpy)
+        - [Main DAG Components and Setup](#main-dag-components-and-setup)
+        - [DAG Tasks and Workflow](#dag-tasks-and-workflow)
+        - [Task Dependency](#task-dependency)
+  - [Ingesting Data to Local Postgres with Airflow](#ingesting-data-to-local-postgres-with-airflow)
+    - [Prerequisites](#prerequisites)
+    - [Running Airflow Locally via Docker](#running-airflow-locally-via-docker)
+        - [DAG Run Results:](#dag-run-results)
+  - [Ingesting Data to GCP](#ingesting-data-to-gcp)
+  - [Issues Encountered (Local Setup)](#issues-encountered-local-setup)
+  - [Issues Encountered (GCP Setup)](#issues-encountered-gcp-setup)
+  - [Credits and Learning Materials Used:](#credits-and-learning-materials-used)
+
 # Orchestration with Airflow
-## Table of Contents:
 
-- [Ingesting Data to Local Postgres with Airflow](#ingesting-data-to-local-postgres-with-airflow)
-
-- [Ingesting Data to GCP](#ingesting-data-to-gcp)
 ## Introduction to Workflow Orchestration
 
 How <b>NOT</b> to create a data pipeline:
@@ -53,14 +75,74 @@ Data Workflow / Directed Acyclic Graph (DAG) for this Module's Data Pipeline:
     - provides additional tools such as history and logging.
 </hr>
 
+## What is Apache Airflow?
+
+- Airflow is an open-source tool used to orchestrate, schedule, and monitor workflows. It is used to automate the processes that move data between systems, run ETL jobs, and manage the dependencies of data processing tasks.
+- Airflow is a batch workflow orchestration platform.
+  
+Workflow scheduler/orchestrator coordinate jobs such as data ingestion, cleaning, transformation, and loading within a pipeline.
+### Workflows as code
+- all workflows are defined in Python code
+- Airflow pipelines are configured as Python code
+- Airflow contains operators to connect with numerous technologies
+- workflow parameterization is built-in leveraging the Jinja templating engine
+
+### [Fundamental Concepts](https://airflow.apache.org/docs/apache-airflow/stable/tutorial/fundamentals.html) and Terminology
+1. DAG (Directed Acyclic Graph):
+    - a collection of tasks with defined dependencies that Airflow executes in a specific order
+    - each DAG represents a workflow
+     - has a beginning as well as an end: "acyclic"
+
+    A DAG's Structure:
+    - DAG Definition
+    - Tasks (eg. Operators)
+    - Task Dependencies (control flow: >> or << )
+
+    A DAG's Run:
+    - individual execution/run of a DAG
+    - may be scheduled or triggered
+
+2. Task:
+   - a single unit of work within a DAG
+   - typically defined as operators that perform specific actions (e.g., run a Python script, execute a SQL query, etc.)
+   - describes what to do, be it fetching data, running analysis, triggering other systems etc
+
+    Common Task Types:
+    - <i><b>Operators</i></b> are predefined tasks - most common.
+    - <i><b>Sensors</i></b> are a subclass of operator which wait for external events to happen.
+    - <i><b>TaskFlow decorators</i></b> (subclasses of Airflow's BaseOperator) are custom Python functions packaged as tasks.
+    lugins - for custom plugins
+    <b>Task Instance</b>:
+    - an individual run of a single task.
+    - has an indicative state, which could be running, success, failed, skipped, up for retry, etc.
+        - Ideally, a task should flow from none, to scheduled, to queued, to running, and finally to success.
+
+3. Operator:
+   -  defines the work to be done in a task
+   -  common operators include:
+        - PythonOperator: executes Python code
+        - BashOperator: Executes bash commands
+        - PostgresOperator / MySqlOperator: runs SQL queries
+
+4. Task Dependencies:
+  - understanding how to set up task dependencies is critical for defining the order in which tasks should run
+  - set using .set_upstream() or .set_downstream(), or simply using the >> or << operators
+- 
+1. Scheduler:
+    - executes the tasks according to the defined schedule (e.g., cron-based scheduling)
+
 ## Airflow Architecture 
 Components of a typical Airflow installation:
 
-- <i><b>scheduler</i></b>
-    - is Airflow's "core"
-    - handles:
-        1. triggering scheduled workflows
-        2. submitting tasks to the executor to run
+- <i><b>scheduler / orchestrator</i></b>
+- The Scheduler is the orchestrator, deciding which tasks should be triggered and in which order.
+    - the scheduler is Airflow's "core":
+      - schedules DAGs (Directed Acyclic Graphs)
+      - triggers scheduled workflows
+      - submits tasks to the executor to run
+      - manages dependencies between tasks and determines the order in which tasks should run
+      - tracks task state (e.g., success, failure) and ensures the next task can be executed when the required conditions are met
+      - coordinates task execution but does not execute the tasks themselves
 
 - <i><b>executor</i></b>
     - handles running tasks
@@ -90,40 +172,17 @@ Airflow creates a folder structure when running:
 - ./logs - contains logs from task execution and scheduler.
 - ./plugins - for custom plugins
 
-### Further Definitions:
-
-<b>DAG (Directed Acyclic Graph)</b>:
-    -specifies the dependencies between a set of tasks with explicit execution order
-    - has a beginning as well as an end: "acyclic".
-
-A DAG's Structure:
-- DAG Definition
-- Tasks (eg. Operators)
-- Task Dependencies (control flow: >> or << )
-
-<b>DAG Run</b>:
-- individual execution/run of a DAG.
-- may be scheduled or triggered.
-
-<b>Task</b>:
-- a defined unit of work. 
-- describes what to do, be it fetching data, running analysis, triggering other systems etc.
-
-Common Task Types:
-- <i><b>Operators</i></b> are predefined tasks - most common.
-- <i><b>Sensors</i></b> are a subclass of operator which wait for external events to happen.
-- <i><b>TaskFlow decorators</i></b> (subclasses of Airflow's BaseOperator) are custom Python functions packaged as tasks.
-lugins - for custom plugins
-<b>Task Instance</b>:
-- an individual run of a single task.
-- has an indicative state, which could be running, success, failed, skipped, up for retry, etc.
-    - Ideally, a task should flow from none, to scheduled, to queued, to running, and finally to success.
-
-### DAGs
-
+### DAGs Examples For Local Data Ingesting
+(Building and Structuring Airflow Workflows Example)
 #### Creating a DAG
 
-- A DAG (Directed Acyclic Graph) is the core concept of Airflow, collecting Tasks together, organized with dependencies and relationships to say how they should run.
+This includes:
+1. how to create and structure a DAG file in Python
+2. how to define a scheduler within a DAG
+3. how to set up task dependencies
+4. how to configure retries and task timeouts.
+
+A DAG (Directed Acyclic Graph) is the core concept of Airflow, collecting Tasks together, organized with dependencies and relationships to say how they should run.
 - A DAG is created as a Python script which imports a series of libraries from Airflow.
 - There are 3 different ways of declaring a DAG. e.g.: using a context manager
 - When declaring a DAG we must provide at least a <code>dag_id</code> parameter. 
@@ -547,7 +606,7 @@ Even though the API response is flagging "a valid OAuth 2.0 token, service accou
 </br>
 </hr>
 
-### Credits and Learning Materials Used:
+## Credits and Learning Materials Used:
 [DE_Zoomcamp_week_2_data_ingestion
 /airflow/](https://github.com/DataTalksClub/data-engineering-zoomcamp/tree/4ecddc7ed8264b694136de2a6e84ce6f88401695/cohorts/2022/week_2_data_ingestion/airflow)
 
