@@ -555,7 +555,7 @@ In this first attempt of ingesting data to GCP the goal is to load a single tabl
 
 After running this DAG you should see the following results:
 
-Airflow UI - Multiple Files DAG run Results
+Airflow UI - Multiple Files DAG Run Results for Yellow Taxi Data
 
 <img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/2_workflow_orchestration/airflow_gcp/_doc/yellow_taxi_data_gcs_multile_files_upload.png" alt="DAG run result in Airflow for multiple files" width="600"/>
 
