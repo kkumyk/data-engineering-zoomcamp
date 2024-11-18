@@ -19,7 +19,8 @@
     - [Prerequisites](#prerequisites)
     - [Running Airflow Locally via Docker](#running-airflow-locally-via-docker)
         - [DAG Run Results:](#dag-run-results)
-  - [Ingesting Data to GCP](#ingesting-data-to-gcp)
+  - [Ingesting Data to GCP - A Single File Upload](#ingesting-data-to-gcp---a-single-file-upload)
+  - [Ingesting Data to GCP - Multiple Files Upload](#ingesting-data-to-gcp---multiple-files-upload)
   - [Issues Encountered (Local Setup)](#issues-encountered-local-setup)
   - [Issues Encountered (GCP Setup)](#issues-encountered-gcp-setup)
   - [Credits and Learning Materials Used:](#credits-and-learning-materials-used)
@@ -516,7 +517,7 @@ The yellow_taxi table should be created and accessible even if the dag is still 
 
 <hr>
 
-## Ingesting Data to GCP
+## Ingesting Data to GCP - A Single File Upload
 We will now run a slightly more complex DAG that will download the NYC taxi trip data, convert it to parquet, upload it to a GCP bucket and ingest it to GCP's BigQuery.
 
 In this first attempt of ingesting data to GCP the goal is to load a single table.
@@ -548,6 +549,21 @@ In this first attempt of ingesting data to GCP the goal is to load a single tabl
 8. Shutdown Airflow by running <code>docker compose down</code> on the terminal.
 </br>
 </hr>
+
+## Ingesting Data to GCP - Multiple Files Upload
+<i>data_ingestion_gcs_multiFile.py</i> DAG is created to upload multiple files to GCS. The uploaded files will contain data for three different taxi types with the data covering the first six months of 2021. Here is the link to the data source for these files: [NYC Taxi & Limousine Commission Data](https://github.com/DataTalksClub/nyc-tlc-data).
+
+After running this DAG you should see the following results:
+
+Airflow UI - Multiple Files DAG run Results
+
+<img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/2_workflow_orchestration/airflow_gcp/_doc/yellow_taxi_data_gcs_multile_files_upload.png" alt="DAG run result in Airflow for multiple files" width="600"/>
+
+<hr>
+
+BigQuery Tables Found in Cloud Storage > Buckets
+
+<img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/2_workflow_orchestration/airflow_gcp/_doc/yellow_taxi_data_gcs_uploaded_files.png" alt="DAG run result in Airflow for multiple files" width="600"/>
 
 ## Issues Encountered (Local Setup)
 
