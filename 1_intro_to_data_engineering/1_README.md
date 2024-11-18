@@ -1,27 +1,43 @@
-Table of Contents:
+- [Introduction to Data Engineering](#introduction-to-data-engineering)
+  - [Docker \& Postgres](#docker--postgres)
+    - [Creating a custom pipeline with Docker](#creating-a-custom-pipeline-with-docker)
+- [Docker and Postgres](#docker-and-postgres)
+  - [1. Creating a Custom Pipeline with Docker](#1-creating-a-custom-pipeline-with-docker)
+  - [2. Running Postgres in a Docker Container](#2-running-postgres-in-a-docker-container)
+    - [Creating a Postgres Database](#creating-a-postgres-database)
+    - [Issues Encountered:](#issues-encountered)
+    - [Testing the Connection](#testing-the-connection)
+  - [3. Ingesting NY Trips Data to Postgres DB with Python](#3-ingesting-ny-trips-data-to-postgres-db-with-python)
+  - [4. Connecting pgAdmin and Postgres with Docker](#4-connecting-pgadmin-and-postgres-with-docker)
+  - [5. Putting the Ingestion Script ingest\_data.py into Docker Container](#5-putting-the-ingestion-script-ingest_datapy-into-docker-container)
+    - [Issues Encountered:](#issues-encountered-1)
+    - [1. Was not able to build the image.](#1-was-not-able-to-build-the-image)
+    - [2. The Docker container could not see the Parquet file.](#2-the-docker-container-could-not-see-the-parquet-file)
+  - [6. Running Postgres and pgAdmin with docker-compose.yaml](#6-running-postgres-and-pgadmin-with-docker-composeyaml)
+- [Docker Networking and Port Mapping](#docker-networking-and-port-mapping)
+- [SQL Refresher](#sql-refresher)
+  - [1. View the first 100 rows of the yellow\_taxi\_data table](#1-view-the-first-100-rows-of-the-yellow_taxi_data-table)
+  - [2. View tables' contents](#2-view-tables-contents)
+  - [3. Use Inner Join to select overlapping rows between 2 tables](#3-use-inner-join-to-select-overlapping-rows-between-2-tables)
+  - [4. Check for Null values](#4-check-for-null-values)
+  - [5. Left Join](#5-left-join)
+  - [6. Remove the time using CAST](#6-remove-the-time-using-cast)
+  - [7. Count the number of taxi trips by day using Group By](#7-count-the-number-of-taxi-trips-by-day-using-group-by)
+  - [8. Find max values: amount paid and nr of passengers](#8-find-max-values-amount-paid-and-nr-of-passengers)
+  - [9. Order by day and then drop off location ID in ascending order](#9-order-by-day-and-then-drop-off-location-id-in-ascending-order)
+- [Terraform and Google Cloud Platform](#terraform-and-google-cloud-platform)
+  - [Local Setup for GCP](#local-setup-for-gcp)
+  - [GCP Access Setup](#gcp-access-setup)
+    - [Project Infrastructure Modules in GCP:](#project-infrastructure-modules-in-gcp)
+  - [Terraform Basics](#terraform-basics)
+    - [Terraform Components:](#terraform-components)
+    - [Terraform Configuration:](#terraform-configuration)
+    - [Terraform Execution Commands:](#terraform-execution-commands)
+  - [Creating GCP Project Infrastructure with Terraform](#creating-gcp-project-infrastructure-with-terraform)
+    - [Prerequisites](#prerequisites)
+      - [Terraform Installation on Linux/Ubuntu](#terraform-installation-on-linuxubuntu)
+  - [Credits](#credits)
 
-[Introduction to Data Engineering](#1-creating-a-custom-pipeline-with-dockerintroduction-to-data-engineering)
-
-[Docker & Postgres](#docker--postgres)
-
-[Creating a Custom Pipeline with Docker](#creating-a-custom-pipeline-with-docker)
-
-[Running Postgres in a Docker Container](#2-running-postgres-in-a-docker-container)
-
-[Ingesting NY Trips Data to Postgres DB with Python](#3-ingesting-ny-trips-data-to-postgres-db-with-python)
-
-[Connecting pgAdmin and Postgres with Docker](#4-connecting-pgadmin-and-postgres-with-docker)
-
-[Putting the Ingestion Script ingest_data.py into Docker Container](#5-putting-the-ingestion-script-ingest_datapy-into-docker-container)
-
-[Running Postgres and pgAdmin with docker-compose.yaml](#6-running-postgres-and-pgadmin-with-docker-composeyaml)
-
-
-[Docker Networking and Port Mapping](#docker-networking-and-port-mapping)
-
-[SQL Refresher](#sql-refresher)
-
-[Terraform and Google Cloud Platform](#terraform-and-google-cloud-platform)
 
 # Introduction to Data Engineering
 
