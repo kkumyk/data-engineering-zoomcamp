@@ -4,8 +4,12 @@
   - [OLAP vs OLTP](#olap-vs-oltp)
   - [BigQuery](#bigquery)
     - [Pricing](#pricing)
-    - [External tables](#external-tables)
-    - [Partitions](#partitions)
+    - [External Tables](#external-tables)
+      - [Main Characteristics of the External Tables](#main-characteristics-of-the-external-tables)
+      - [External Table Creation Example (from a DAG)](#external-table-creation-example-from-a-dag)
+    - [Partitioned Tables](#partitioned-tables)
+      - [Main Characteristics of the Partitioned Tables:](#main-characteristics-of-the-partitioned-tables)
+      - [Partitioned Table Creation Example (from a DAG)](#partitioned-table-creation-example-from-a-dag)
     - [Clustering](#clustering)
     - [Partitioning vs Clustering in BQ](#partitioning-vs-clustering-in-bq)
     - [BigQuery's Best Practices](#bigquerys-best-practices)
@@ -102,8 +106,7 @@ Pricing divided in 2 main components:
 <strong>I. Data Processing</strong>
 
 - has a 2-tier pricing model:
-    - [On demand pricing (default)](https://cloud.google.com/bigquery/pricing#analysis_pricing_models); the first TB of the month is free.
-    - Flat rate pricing based on the number of pre-requested <i>slots</i> (virtual CPUs); makes sense when processing more than 400TB of data per month.
+    - [On demand pricing (default)](https://cloud.google. based on dateth.
 
 <strong>II. Data Storage</strong>
 - [fixed prices](https://cloud.google.com/bigquery/pricing#storage)
@@ -112,13 +115,21 @@ Pricing divided in 2 main components:
 <strong>Please note</strong>:
 <i>When running queries on BQ, the top-right corner of the window will display an approximation of the size of the data that will be processed by the query. Once the query has run, the actual amount of processed data will appear in the Query results panel in the lower half of the window. This can be useful to quickly calculate the cost of the query.</i>
 
-### External tables
+### [External Tables](https://cloud.google.com/bigquery/docs/tables-intro#external_tables)
 
-An <strong>external table</strong> is a table that acts like a standard BQ table. The table metadata (such as the schema) is stored in BQ storage but the data itself is external.
+<strong>External tables</strong> in BigQuery are tables stored outside out of BigQuery storage and refer to data that's stored outside of BigQuery, typically in Google Cloud Storage (GCS). 
 
-BQ supports a few [external data sources](https://cloud.google.com/bigquery/docs/external-data-sources): you may query these sources directly from BigQuery even though the data itself isn't stored in BQ.
+An <strong>external table</strong> is a table that acts like a [standard BQ table](https://cloud.google.com/bigquery/docs/tables-intro#standard_tables). The table metadata (such as the schema) is stored in BQ storage but the data itself is external. The data is not physically stored in BigQuery. Instead, BigQuery queries the data directly from its external location. (BQ supports a few [external data sources](https://cloud.google.com/bigquery/docs/external-data-sources): you may query these sources directly from BigQuery even though the data itself isn't stored in BQ.)
 
-
+#### Main Characteristics of the External Tables
+- points to data in an external source, such as GCS
+- the data is not physically copied into BigQuery; it remains stored in GCS
+- the external table is linked to data stored in a particular format, e.g.: Parquet
+- BQ can auto-detect the schema of the external data; this is helpful when you don’t know the schema in advance; you can define the schema explicitly when creating the external table
+- queries on the external table can be run in the same way as on any other BQ table, but BQ reads the data from GCS when running the queries; this can introduce some latency because data isn't stored within BQ itself
+- useful for when you need to query large datasets stored in GCS without the need to load the data into BQ
+- BQ cannot determine processing costs of external tables
+  
 You may create an external table from a CSV or Parquet file stored in a Cloud Storage bucket.
 
 The query below will create an external table based on 2 CSV files. BQ will figure out the table schema and the datatypes based on the contents of the files.
@@ -130,7 +141,6 @@ OPTIONS (
   uris = ['gs://nyc-tl-data/trip data/yellow_tripdata_2019-*.csv', 'gs://nyc-tl-data/trip data/yellow_tripdata_2020-*.csv']
 );
 ```
-Please note, BQ cannot determine processing costs of external tables.
 
 You may import an external table into BQ as a regular internal table by copying the contents of the external table into a new internal table. For example:
 ```sql
@@ -138,18 +148,49 @@ CREATE OR REPLACE TABLE taxi-rides-ny.nytaxi.yellow_tripdata_non_partitoned AS
 SELECT * FROM taxi-rides-ny.nytaxi.external_yellow_tripdata;
 ```
 
-### Partitions
+#### External Table Creation Example (from a DAG)
+An external table is created in BQ which points to the Parquet files stored in GCS (gs://{BUCKET}/{taxi_type}/*):
+
+```python
+gcs_2_bq_ext_task = BigQueryCreateExternalTableOperator(
+  task_id=f"bq_{taxi_type}_{DATASET}_external_table_task",
+  table_resource={
+      "tableReference": {
+          "projectId": PROJECT_ID,
+          "datasetId": BIGQUERY_DATASET,
+          "tableId": f"{taxi_type}_{DATASET}_external_table",
+      },
+      "externalDataConfiguration": {
+          "autodetect": "True",
+          "sourceFormat": "PARQUET",
+          "sourceUris": [f"gs://{BUCKET}/{taxi_type}/*"],
+      },
+  },
+)
+```
+
+### [Partitioned Tables](https://cloud.google.com/bigquery/docs/partitioned-tables)
 [video source 1](https://www.youtube.com/watch?v=jrHljAoD6nM&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=26) and [video source 2](https://www.youtube.com/watch?v=-CqXf7vhhDs&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=27)
 
 BQ tables can be partitioned into multiple smaller tables. E.g., if we often filter queries based on date, we could partition a table based on date so that we only query a specific sub-table based on the date we're interested in.
 
-Partition tables are very useful to improve performance and reduce costs, because BQ will not process as much data per query.
+<strong>Partitioned tables</strong> are very useful to improve performance and reduce costs, because BQ will not process as much data per query.
 
-tables may be partitioned by:
+<strong>Partitioned table</strong>  in BQ is a table that stores data physically within BQ, and the data is partitioned into smaller, manageable segments based on a specified column, usually a timestamp or date column. Partitioning improves performance by reducing the amount of data scanned when running queries.
+
+#### Main Characteristics of the Partitioned Tables:
+- the data is physically stored within BQ
+- data is loaded into BQ (as opposed to an external table where the data remains in GCS)
+- data is divided into partitions, which are subsets of the data based on the values in a column, often used for time-series or date-based data
+- partitioned tables help optimize query performance because BQ only scans the relevant partitions of the table based on the query; for example, if a query filters by a specific date range, BQ only scans the partitions corresponding to that range
+- the schema of the partitioned table is explicitly defined, and data must adhere to the schema when it is loaded into BQ
+- ideal for large datasets where performance and cost optimization are important because partitioning helps limit the amount of data read by each query
+
+Tables may be partitioned by:
 
 1. Time-unit column\*: based on a TIMESTAMP, DATE, or DATETIME column in the table.
 2. Ingestion time\*: based on the timestamp when BigQuery ingests the data.
-3. Integer range:  based on an integer column.
+3. Integer range: based on an integer column.
 
 \* <i>the partition may be daily (the default option), hourly, monthly or yearly.</i>
 
@@ -163,6 +204,29 @@ PARTITION BY
 SELECT * FROM taxi-rides-ny.nytaxi.external_yellow_tripdata;
 ```
 BQ will identify partitioned tables with a specific icon. The <i>Details</i> tab of the table will specify the field which was used for partitioning the table and its datatype.
+
+#### Partitioned Table Creation Example (from a DAG)
+
+In the example below partitioned table is created by querying the external table. The new table is partitioned based on the specified column (ds_col), which is typically a date or timestamp column, here: tpep_pickup_datetime:
+
+```python
+CREATE_BQ_TBL_QUERY = (
+    f"CREATE OR REPLACE TABLE {BIGQUERY_DATASET}.{taxi_type}_{DATASET} \
+    PARTITION BY DATE({ds_col}) \
+    AS \
+    SELECT * FROM {BIGQUERY_DATASET}.{taxi_type}_{DATASET}_external_table;"
+)
+
+bq_ext_2_part_task = BigQueryInsertJobOperator(
+    task_id=f"bq_create_{taxi_type}_{DATASET}_partitioned_table_task",
+    configuration={
+        "query": {
+            "query": CREATE_BQ_TBL_QUERY,
+            "useLegacySql": False,
+        }
+    }
+)
+```
 
 ### Clustering
 
