@@ -3,3 +3,6 @@
 Module 1: [Intro to Data Engineering, Docker and Postgres](https://github.com/kkumyk/data-engineering-zoomcamp/tree/main/1_intro_to_data_engineering)
 
 Module 2: [Workflow Orchestration with Airflow](https://github.com/kkumyk/data-engineering-zoomcamp/tree/main/2_workflow_orchestration)
+
+
+Module 3: [Data Warehouse and BigQuery](https://github.com/kkumyk/data-engineering-zoomcamp/tree/main/3_data_warehouse)
