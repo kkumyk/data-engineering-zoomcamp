@@ -29,5 +29,11 @@
     
     <img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/4_analytics_engineering/_doc/yellow_2019_05_file_upload.png" alt="DAG run result - a single file upload to GCS bucket" width="600"/>
 
-    Each file was then moved manually from the bucket to the corresponding taxi type/year folder. All in one, it looks like the work done in the previous three modules was not in vein and I have the data required to continue with the material from ANalytics Engineering module of the course. :) 
+    Each file was then moved manually from the bucket to the corresponding taxi type/year folder in GCS. The next step is to move the data from these files into BigQuery.
+    
+    I've run the gcs_2_bq_dag.py DAG for the yellow taxi type only to start with (TAXI_TYPES = {'yellow': 'tpep_pickup_datetime'}) and created an external and a partitioned tables containing data fro 2019 and 2020:
+
+    <img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/4_analytics_engineering/_doc/gcs_to_bg_yellow_2019_2020.png" alt="DAG run result: yellow taxi type data ingested to the external and partitioned tables" width="600"/>
+    
+    This should be enough to play around in the module 4. All in one, it looks like the work done in the previous three modules was not in vein and I should have data required to continue with the material in the Analytics Engineering module of the course. :) 
 
