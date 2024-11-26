@@ -10,6 +10,8 @@
       - [What is a dbt model?](#what-is-a-dbt-model)
     - [How to use dbt?](#how-to-use-dbt)
     - [Setting Up dbt](#setting-up-dbt)
+      - [Setting Up dbt Cloud](#setting-up-dbt-cloud)
+      - [Starting a dbt Project](#starting-a-dbt-project)
 
 
 # Analytics Engineering
@@ -142,5 +144,21 @@ For integration with BigQuery we will use the dbt Cloud IDE.
 
 ### Setting Up dbt
 Before we begin, create 2 new empty datasets for your project in BigQuery:
-1. a development dataset
-2. a production dataset
+1. a development dataset, e.g.: dbt_dev
+2. a production dataset, e.g.: dbt_prod
+   
+#### Setting Up dbt Cloud
+1. Got to the dbt homepage and [sign up](https://www.getdbt.com/signup) to create a user account.
+2. Set up a GitHub repo for your project.
+3. Connect dbt to BigQuery development dataset and to the Github repo by following [these instructions](https://github.com/DataTalksClub/data-engineering-zoomcamp/blob/main/04-analytics-engineering/dbt_cloud_setup.md).
+   
+#### Starting a dbt Project
+1. In the IDE windows, press the green Initilize button to create the project files.
+2. Inside dbt_project.yml, change the project name both in the name field as well as right below the models: block. You may comment or delete the example block at the end.
+
+
+
+
+
+
+
