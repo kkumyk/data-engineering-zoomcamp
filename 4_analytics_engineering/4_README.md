@@ -12,6 +12,9 @@
     - [Setting Up dbt](#setting-up-dbt)
       - [Setting Up dbt Cloud](#setting-up-dbt-cloud)
       - [Starting a dbt Project](#starting-a-dbt-project)
+    - [Deploying With dbt](#deploying-with-dbt)
+      - [Anatomy of a dbt Model](#anatomy-of-a-dbt-model)
+      - [Types of Materialization Strategies](#types-of-materialization-strategies)
 
 
 # Analytics Engineering
@@ -156,9 +159,44 @@ Before we begin, create 2 new empty datasets for your project in BigQuery:
 1. In the IDE windows, press the green Initilize button to create the project files.
 2. Inside dbt_project.yml, change the project name both in the name field as well as right below the models: block. You may comment or delete the example block at the end.
 
+### Deploying With dbt
+[video source 4.3.1](https://www.youtube.com/watch?v=UVI30Vxzd6c&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=40)
 
+#### Anatomy of a dbt Model
 
+- dbt models are mostly written in SQL (remember that a dbt model is essentially a SELECT query)
+- the config() function is commonly used at the beginning of a model to define a materialization strategy - a strategy for persisting dbt models in a warehouse. 
 
+Here's an example dbt model:
+```sql
+{{
+    config(materialized='table')
+}}
 
+SELECT *
+FROM staging.source_table
+WHERE record_state = 'ACTIVE'
+```
+#### [Types of Materialization Strategies](https://docs.getdbt.com/docs/build/materializations)
+Materializations are strategies for persisting dbt models in a warehouse.
 
+Types of materializations built into dbt:
+1. table - the model will be rebuilt as a table on each run
+2. view - the model will be rebuild on each run as a SQL view
+3. incremental - a table strategy that allows to add/update records incrementally rather than rebuilding the complete table on each run
+4. ephemeral - creates a Common Table Expression (CTE)
+5. materialized view
+6. [custom materializations](https://docs.getdbt.com/guides/create-new-materializations?step=1) for advanced users.
+   
+The above model will be compiled by dbt into the following SQL query:
+```sql
+CREATE TABLE my_schema.my_model AS (
+    SELECT *
+    FROM staging.source_table
+    WHERE record_state = 'ACTIVE'
+)
+```
+After the code is compiled, dbt will run the compiled code in the Data Warehouse.
 
+<!-- #### The FROM clause
+ -->
