@@ -12,6 +12,7 @@
     - [Setting Up dbt](#setting-up-dbt)
       - [Setting Up dbt Cloud](#setting-up-dbt-cloud)
       - [Starting a dbt Project](#starting-a-dbt-project)
+    - [Developing taxi\_rides\_ny dbt Project](#developing-taxi_rides_ny-dbt-project)
     - [Deploying With dbt](#deploying-with-dbt)
       - [Anatomy of a dbt Model](#anatomy-of-a-dbt-model)
       - [Types of Materialization Strategies](#types-of-materialization-strategies)
@@ -159,6 +160,86 @@ Before we begin, create 2 new empty datasets for your project in BigQuery:
 1. In the IDE windows, press the green Initilize button to create the project files.
 2. Inside dbt_project.yml, change the project name both in the name field as well as right below the models: block. You may comment or delete the example block at the end.
 
+
+### Developing taxi_rides_ny dbt Project
+1. After setting up dbt Cloud account, in the Settings of your project rename the default name to "taxi_rides_ny".
+2. Reference the given name in the dbt_project.yml file under the "name:" and straight after the "models:" line:
+   ```yml
+    name: 'taxi_rides_ny'   
+
+    models:
+      taxi_rides_ny:
+   ```
+3. Under the model folder create two folders: code and staging.
+4. In the staging folder create two files:
+   - schema.yml, here define:
+     - the database the data will be coming from
+     - the schema
+     - the (source) tables
+     ```yml
+      version: 2
+
+      sources:
+          - name: staging
+            database:  your-BigQuery-dataset-name
+            schema: trips_data_all
+
+            tables:
+                - name: green_tripdata_external_table
+                - name: yellow_tripdata_external_table
+      ```
+    - stg_green_tripdata.sql will contain:
+      ```yml
+      {{ config(materialized='view') }}
+
+      select * from {{ source('staging', 'green_tripdata_external_table') }}
+      limit 100
+      ```
+      The query will create a view in the staging dataset/schema in our database under the development dataset:
+
+      <img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/4_analytics_engineering/_doc/stg_green_tripdata_view.png" alt="staging green trip data view" width="300"/>
+
+      We make use of the source() function to access the green taxi data table, which is defined inside the schema.yml file.
+5.  Build your project.
+6.  Define a get_payment_type_description macro under the macros folder.
+    ```sql
+    --- get_payment_type_description.sql
+
+    {# This macro returns the description of the payment_type #}
+
+    {% macro get_payment_type_description(payment_type) %}
+
+        case {{ payment_type }}
+            when 1 then 'Credit card'
+            when 2 then 'Cash'
+            when 3 then 'No charge'
+            when 4 then 'Dispute'
+            when 5 then 'Unknown'
+            when 6 then 'Voided trip'
+        end
+        
+    {% endmacro %}
+    ```
+7. Use the above macro in the stg_green_tripdata.sql by replacing its contents with:
+   ```sql
+    select
+        {{ get_payment_type_description('payment_type') }} as payment_type_description,
+        congestion_surcharge
+    from {{ source('staging','green_tripdata_external_table') }}
+    where vendorid is not null
+   ```
+   After the project is built, the stg_trip_data view will be updated with the data below:
+  
+
+    <img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/4_analytics_engineering/_doc/payment_model_bq_results.png" alt="payment model bq results" width="600"/>
+
+
+
+
+
+
+
+
 ### Deploying With dbt
 [video source 4.3.1](https://www.youtube.com/watch?v=UVI30Vxzd6c&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=40)
 
@@ -197,6 +278,3 @@ CREATE TABLE my_schema.my_model AS (
 )
 ```
 After the code is compiled, dbt will run the compiled code in the Data Warehouse.
-
-<!-- #### The FROM clause
- -->
