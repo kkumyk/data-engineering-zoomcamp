@@ -16,6 +16,7 @@
     - [Deploying With dbt](#deploying-with-dbt)
       - [Anatomy of a dbt Model](#anatomy-of-a-dbt-model)
       - [Types of Materialization Strategies](#types-of-materialization-strategies)
+      - [Packages](#packages)
 
 
 # Analytics Engineering
@@ -230,8 +231,123 @@ Before we begin, create 2 new empty datasets for your project in BigQuery:
    ```
    After the project is built, the stg_trip_data view will be updated with the data below:
   
-
     <img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/4_analytics_engineering/_doc/payment_model_bq_results.png" alt="payment model bq results" width="600"/>
+
+  Let's update the model by adding more data fields:
+
+  ```sql
+  {{ config( materialized='view')}}
+
+  select
+      -- identifiers,
+      VendorId as vendorid,
+      RatecodeID as ratecodeid,
+      PULocationID as pickup_locationid,
+      DOLocationID as dropoff_locationid,
+      
+      -- timestamps
+      lpep_pickup_datetime as pickup_datetime,
+      lpep_dropoff_datetime as dropoff_datetime,
+      
+      -- trip info
+      store_and_fwd_flag,
+      passenger_count as passenger_count,
+      trip_distance as trip_distance,
+      trip_type as trip_type,
+
+      -- payment info
+      fare_amount,
+      extra,
+      mta_tax,
+      tip_amount,
+      tolls_amount,
+      ehail_fee,
+      improvement_surcharge,
+      total_amount,
+      payment_type,
+      {{ get_payment_type_description("payment_type") }} as payment_type_description,
+      congestion_surcharge
+      
+  from {{ source('staging','green_tripdata_external_table') }}
+  limit 100
+  ``` 
+  This model will be compiled to:
+
+  ```sql
+  select
+    -- identifiers,
+    VendorId as vendorid,
+    RatecodeID as ratecodeid,
+    PULocationID as pickup_locationid,
+    DOLocationID as dropoff_locationid,
+    
+    -- timestamps
+    lpep_pickup_datetime as pickup_datetime,
+    lpep_dropoff_datetime as dropoff_datetime,
+    
+    -- trip info
+    store_and_fwd_flag,
+    passenger_count as passenger_count,
+    trip_distance as trip_distance,
+    trip_type as trip_type,
+
+    -- payment info
+    fare_amount,
+    extra,
+    mta_tax,
+    tip_amount,
+    tolls_amount,
+    ehail_fee,
+    improvement_surcharge,
+    total_amount,
+    payment_type,
+    
+
+    case payment_type
+        when 1 then 'Credit card'
+        when 2 then 'Cash'
+        when 3 then 'No charge'
+        when 4 then 'Dispute'
+        when 5 then 'Unknown'
+        when 6 then 'Voided trip'
+    end
+    
+ as payment_type_description,
+    congestion_surcharge
+    
+from `dtc-de-course-YOUR_DATASET_ID`.`trips_data_all`.`green_tripdata_external_table`
+limit 100
+```
+And the updated BigQuery view will look like:
+
+  <img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/4_analytics_engineering/_doc/stg_green_tripdata_with_payment_description.png" alt="payment model bq results" width="600"/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <!-- 1. Install [dbt_utils](https://hub.getdbt.com/dbt-labs/dbt_utils/latest/) package by adding packages.yml file to your dbt project and adding the content below to the file:
+      ```yml
+      packages:
+        - package: dbt-labs/dbt_utils
+          version: 1.3.0
+      ```
+      Save the file and install the package by running the <code>dbt deps</code> command.
+
+ -->
 
 
 
@@ -278,3 +394,15 @@ CREATE TABLE my_schema.my_model AS (
 )
 ```
 After the code is compiled, dbt will run the compiled code in the Data Warehouse.
+
+#### Packages
+- Macros can be exported to packages, similarly to how classes and functions can be exported to libraries.
+- Packages contain standalone dbt projects with models and macros that tackle a specific problem area.
+- To use a package, you must first create a packages.yml file in the root of your work directory. E.g.:
+  ```yml
+  packages:
+    - package: dbt-labs/dbt_utils
+      version: 1.3.0
+  ```
+- After declaring your packages, you need to install them by running the <code>dbt deps</code> command.
+
