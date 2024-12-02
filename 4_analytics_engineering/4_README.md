@@ -13,6 +13,7 @@
       - [Setting Up dbt Cloud](#setting-up-dbt-cloud)
       - [Starting a dbt Project](#starting-a-dbt-project)
     - [Developing taxi\_rides\_ny dbt Project](#developing-taxi_rides_ny-dbt-project)
+        - [Calling the macro in our model](#calling-the-macro-in-our-model)
     - [Deploying With dbt](#deploying-with-dbt)
       - [Anatomy of a dbt Model](#anatomy-of-a-dbt-model)
       - [Types of Materialization Strategies](#types-of-materialization-strategies)
@@ -233,7 +234,8 @@ Before we begin, create 2 new empty datasets for your project in BigQuery:
   
     <img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/4_analytics_engineering/_doc/payment_model_bq_results.png" alt="payment model bq results" width="600"/>
 
-  Let's update the model by adding more data fields:
+  ##### Calling the macro in our model
+  Let's update the model by adding more data fields. Note that we are calling the payment description type macro with <code>{{ get_payment_type_description("payment_type") }} as payment_type_description,</code> line. See below:
 
   ```sql
   {{ config( materialized='view')}}
@@ -271,7 +273,8 @@ Before we begin, create 2 new empty datasets for your project in BigQuery:
   from {{ source('staging','green_tripdata_external_table') }}
   limit 100
   ``` 
-  This model will be compiled to:
+
+  Note that above query the macro has been turned into code and also our FROM statement has got the complete path:
 
   ```sql
   select
@@ -320,38 +323,79 @@ limit 100
 ```
 And the updated BigQuery view will look like:
 
-  <img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/4_analytics_engineering/_doc/stg_green_tripdata_with_payment_description.png" alt="payment model bq results" width="600"/>
+  <img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/4_analytics_engineering/_doc/stg_green_tripdata_with_payment_description.png" alt="payment model bq results" width="1100"/>
 
 
+- We can use Macros in a single project but we can also use them across projects with packages.
+- These are like libraries in programming languages.
+
+8. We are now going to install a package:
+- Install [dbt_utils](https://hub.getdbt.com/dbt-labs/dbt_utils/latest/) package by adding packages.yml file at the top level of your dbt project and adding the content below to the file:
+
+  ```yml
+  packages:
+    - package: dbt-labs/dbt_utils
+      version: 1.3.0
+  ```
+- Save the file and install the package by running the <code>dbt deps</code> command. 
+- After this we see a dbt_packages folder with a dbt_utils folder and a collection of macros in our dbt project:
+  <img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/4_analytics_engineering/_doc/dbt_packages_install_results.png" alt="dbt packages install results" width="500"/>
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  <!-- 1. Install [dbt_utils](https://hub.getdbt.com/dbt-labs/dbt_utils/latest/) package by adding packages.yml file to your dbt project and adding the content below to the file:
-      ```yml
-      packages:
-        - package: dbt-labs/dbt_utils
-          version: 1.3.0
+9. Adding the Identifiers
+    - We are going to use our dbt_utils package to create a unique id ‘tripid’.
+    - In our stg_green_tripdata.sql model we will add this line:
+      
+      ```sql
+      select
+      -- identifiers,
+      VendorId as vendorid,
+      {{ dbt_utils.generate_surrogate_key(['VendorId', 'lpep_pickup_datetime']) }} as tripid, 
+      ...
       ```
-      Save the file and install the package by running the <code>dbt deps</code> command.
+     - Save and run this model.
+     - Refresh your green data staging view in BigQuery to see it the updated with the unique identifier:
+  
+        <img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/4_analytics_engineering/_doc/tripid_unique_identifier_in_bq_results.png" alt="tripid unique identifier in bq results" width="500"/>
 
- -->
+10. Variables
 
+- Variables are values that we can use across the project.
+- We can do this in one of two ways:
+  - in the dbt_project.yml file:
 
+    ```yml
+    vars:
+      is_test_run: false
+    ```
 
+  - on the command line
+- We need to change our model to cater for this by adding the code below to our model which will either limit the results or not limit them depending on what we type on the command line during a run:
+  ```sql
+  --- stg_green_data.sql
+  ...
+    from {{ source('staging','green_tripdata_external_table') }}
 
+  -- dbt build --select <model_name> --vars '{'is_test_run': 'false'}'
+
+  {% if var('is_test_run', default=true) %}
+
+    limit 23
+
+  {% endif %}
+  ```
+- The compiled code takes the default value and will limit the results in the staging view:
+  ```sql
+  --- stg_green_data.sql
+  ...
+  from `dtc-de-course-YOUR_DATASET_ID`.`trips_data_all`.`green_tripdata_external_table`
+
+  -- dbt build --select <model_name> --var '{'is_test_run': 'false'}'
+
+    limit 23
+  ```
+ - Add <code>vars: is_test_run: false</code> as shown above to the dbt_project.yml file.
+ - Run the project again and review the compiled file. You should see that <code>limit</code> does not appear in the compiled code meaning that it will not be applied to the view.
 
 
 
