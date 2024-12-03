@@ -397,8 +397,17 @@ And the updated BigQuery view will look like:
  - Add <code>vars: is_test_run: false</code> as shown above to the dbt_project.yml file.
  - Run the project again and review the compiled file. You should see that <code>limit</code> does not appear in the compiled code meaning that it will not be applied to the view.
 
-
-
+11.  Comparing the BigQuery Schemas for the Green and Yellow Tables:
+      - I compared the field names for the green and yellow tables and saw that the green table has two more fields that the yellow does not: <i>ehail_fee</i> and <i>trip_type</i>. I understood from the tutorial that the called fields should be the same from both tables.
+       - Adjusting green trip data model:
+         - I’m going to go back to my green trip dbt model and change it so that it’s not importing these two fields by removing them from the stg_green_tripdata.sql model. I re-build the project and check the returned results in the BigQuery.
+       - I also wanted to look into the issue I had with partitioning the green data external table. I managed to create a partitioned table for the yellow one, but the same did not work for the green table due to the following error <code>Parquet column 'ehail_fee' has type DOUBLE which does not match the target cpp_type INT64.</code> The data I see for this column is simply <i>null</i> and does not match the schema defined for this field being set to INTEGER. On the UI I simply don't see how to edit the schema and hence I still cannot create the partitioned table for the green taxi data set.
+       - Next, duplicate the stg_green_data.sql dbt model, then:
+         - replace the "green" to yellow in the file name
+         - change the lpep_pickup_datetime, lpep_dropoff_datetime to tpep_pickup_datetime, tpep_dropoff_datetime; do the same in the <code>{{ dbt_utils.generate_surrogate_key(['VendorId', 'tpep_pickup_datetime']) }} as tripid,</code>
+         - adjust the source name in the FROM statement: <code>from {{ source('staging','yellow_tripdata') }}</code>
+  
+You should now have two BigQuery views with the same schema with the new view stg_yellow_tripdata been created.
 
 ### Deploying With dbt
 [video source 4.3.1](https://www.youtube.com/watch?v=UVI30Vxzd6c&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=40)
