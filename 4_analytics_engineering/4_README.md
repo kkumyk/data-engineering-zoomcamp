@@ -489,7 +489,7 @@ You should now have two BigQuery views with the same schema with the new view st
   The whole point of creating the fact_trips model is to show that we can take both existing models – the staging green trip data and the staging yellow trip data. 
 
 
-  <img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/4_analytics_engineering/_doc/fact_trips_mdl.png" alt="fact trips dbt model" width="500"/>
+  <img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/4_analytics_engineering/_doc/fact_trips_mdl.png" alt="fact trips dbt model" width="1000"/>
 
   - After running the model I hit a weired error : <code> Access Denied: BigQuery BigQuery: Permission denied while globbing file pattern. dbt-service-account@dtc-de-....iam.gserviceaccount.com does not have storage.objects.list access to the Google Cloud Storage bucket. Permission 'storage.objects.list' denied on resource (or it may not exist). Please make sure gs://dtc_data_lake_dtc-de-.../raw/green_tripdata/* is accessible via appropriate IAM roles, e.g. Storage Object Viewer or Storage Object Creator</code>
   - I see that [a similar permission error was also encountered](https://learningdataengineering540969211.wordpress.com/2022/02/20/week-4-de-zoomcamp-4-3-1-build-the-first-dbt-models-part-6-seeds/) by prople from previous cohorts. As in these notes, after reviewing the permissions for the service account at first, I simple re-run the model and ... miracle of the miracles... it simply worked. At this stage, going into the reasons for why this error did appear and then simply resolved by itself is something outside I can afford based on my time budget. My estimate of where I in the module's material is something about 60% - I hope - and I simply will carry one with the next step.
@@ -539,7 +539,7 @@ Note that I again removed the two fields as per step 11.
 - Note that we use a variable in the added schema and that’s because our accepted values are going to apply to both our green and yellow trip data. We therefore need to define this variable in the <code>project.yml</code> file.
 - Adjust the staging models as per "Fix green/yellow trip data" sections [here](https://learningdataengineering540969211.wordpress.com/2022/02/20/week-4-de-zoomcamp-4-3-2-testing-and-documenting-the-project-part-1/).
 - Running the <code>dbt test</code> confirms that the permissions error still persists. Only after adding "Storage Object Creator" as a role to the dbt-service-account the issue is resolved, the tests are passed with only two warnings:
-  <img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/4_analytics_engineering/_doc/dbt_test_results.png" alt="dbt test results" width="700"/>
+  <img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/4_analytics_engineering/_doc/dbt_test_results.png" alt="dbt test results" width="1100"/>
 
 - Let's re-build the whole project to see if it works as a whole. I run, and the build is successeful with no test errors logged.
   
