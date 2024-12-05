@@ -15,10 +15,8 @@
       - [Starting a dbt Project](#starting-a-dbt-project)
     - [Developing taxi\_rides\_ny dbt Project](#developing-taxi_rides_ny-dbt-project)
         - [Calling the macro in our model](#calling-the-macro-in-our-model)
-    - [Developing taxi\_rides\_ny dbt Project](#developing-taxi_rides_ny-dbt-project-1)
-        - [Calling the macro in our model](#calling-the-macro-in-our-model-1)
     - [Testing and Documenting the dbt Project](#testing-and-documenting-the-dbt-project)
-    - [Documentation](#documentation)
+      - [Documentation](#documentation)
     - [Deploying with dbt Cloud](#deploying-with-dbt-cloud)
 
 
@@ -40,13 +38,11 @@
 
     Starting with checking the file uploads done in the previous modules is a good exercise for reviewing of what was done in the previous three modules.
 
-    In my case, to shorted the time spent for uploading the files, I've uploaded the files for the three taxi types for the first half of 2021.
-
     The prerequisites in module 4 require the data for 2019 and 2020 as this module using Airflow for orchestration was done a couple of years ago. The FHV data for 2019 was requested for the homework completion. I decided to first focus on uploads for the Yellow and Green data as it looks like these will be used throughout the module.
 
     To upload these files I run the [data_ingestion_gcs_multiFile.py dag](https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/2_workflow_orchestration/airflow_gcp/dags/data_ingestion_gcs_multiFile.py) from the airflow_gcp folder by first adjusting the start and the end dates and commenting out the tasks focusing on fhv file uploads. The result was that all files apart from the three months's data in 2019 for the Yellow taxi type were not uploaded, see below: 
 
-    <img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/4_analytics_engineering/_doc/yellow_taxi_dnday, 27 January 2025a_three_workflows_failed.png" alt="DAG run result in Airflow for multiple files - three failed" width="600"/>
+    <img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/4_analytics_engineering/_doc/yellow_taxi_data_three_workflows_failed.png" alt="DAG run result in Airflow for multiple files - three failed" width="600"/>
 
     I saw this as a good opportunity to test the [data_ingestion_gcs.py (uploads a single file to GCS)](https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/2_workflow_orchestration/airflow_gcp/dags/data_ingestion_gcs.py). I run this dag for the missing three files. They will first end in the GCS bucket on the same level as the taxi types folders, see below the uploaded file for May 2019:
     
@@ -56,7 +52,7 @@
     
     I've run the gcs_2_bq_dag.py DAG for the yellow taxi type only to start with (TAXI_TYPES = {'yellow': 'tpep_pickup_datetime'}) and created an external and a partitioned tables containing data fro 2019 and 2020:
 
-    <img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/4_analytics_engineering/_doc/gcs_to_bg_yellow_2019_2020.png" alt="DAG run result: yellow taxi type data ingested to the external and partitioned tables" width="600"/>
+    <img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/4_analytics_engineering/_doc/gcs_to_bg_yellow_2019_2020.png" alt="DAG run result: yellow taxi type data ingested to the external and partitioned tables" width="1100"/>
     
     This should be enough to play around in the module 4. All in one, it looks like the work done in the previous three modules was not in vein and I should have data required to continue with the material in the Analytics Engineering module of the course. :) 
 
@@ -343,7 +339,7 @@ And the updated BigQuery view will look like:
   ```
 - Save the file and install the package by running the <code>dbt deps</code> command. 
 - After this we see a dbt_packages folder with a dbt_utils folder and a collection of macros in our dbt project:
-  <img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/4_analytics_engineering/_doc/dbt_packages_install_results.png" alt="dbt packages install results" width="500"/>
+  <img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/4_analytics_engineering/_doc/dbt_packages_install_results.png" alt="dbt packages install results" width="300"/>
 
 
 9. Adding the Identifiers
@@ -490,7 +486,232 @@ You should now have two BigQuery views with the same schema with the new view st
     inner join dim_zones as dropoff_zone
     on trips_unioned.dropoff_locationid = dropoff_zone.locationid
     ```
-    - the whole point of creating the fact_trips model is to show that we can take both existing models – the staging green trip data and the staging yellow tri- 
+  The whole point of creating the fact_trips model is to show that we can take both existing models – the staging green trip data and the staging yellow trip data. 
+
+
+  <img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/4_analytics_engineering/_doc/fact_trips_mdl.png" alt="fact trips dbt model" width="500"/>
+
+  - After running the model I hit a weired error : <code> Access Denied: BigQuery BigQuery: Permission denied while globbing file pattern. dbt-service-account@dtc-de-....iam.gserviceaccount.com does not have storage.objects.list access to the Google Cloud Storage bucket. Permission 'storage.objects.list' denied on resource (or it may not exist). Please make sure gs://dtc_data_lake_dtc-de-.../raw/green_tripdata/* is accessible via appropriate IAM roles, e.g. Storage Object Viewer or Storage Object Creator</code>
+  - I see that [a similar permission error was also encountered](https://learningdataengineering540969211.wordpress.com/2022/02/20/week-4-de-zoomcamp-4-3-1-build-the-first-dbt-models-part-6-seeds/) by prople from previous cohorts. As in these notes, after reviewing the permissions for the service account at first, I simple re-run the model and ... miracle of the miracles... it simply worked. At this stage, going into the reasons for why this error did appear and then simply resolved by itself is something outside I can afford based on my time budget. My estimate of where I in the module's material is something about 60% - I hope - and I simply will carry one with the next step.
+  - the result of running the fact_trips.sql model is a <code>dim_zones</code> table in your BigQuery's dev environtment dataset.
+
+### Testing and Documenting the dbt Project
+
+1. Create dm_monthly_zone_revenue.sql file in the <code>core</code> folder of the dbt project and add the content below to it:
+```sql
+{{ config(materialized='table') }}
+
+with trips_data as (
+    select * from {{ ref('fact_trips') }}
+)
+    select 
+    -- Reveneue grouping 
+    pickup_zone as revenue_zone,
+    -- {{ dbt.date_trunc("month", "pickup_datetime") }} as revenue_month, 
+    date_trunc(pickup_datetime, month) as revenue_month,
+
+    service_type, 
+
+    -- Revenue calculation 
+    sum(fare_amount) as revenue_monthly_fare,
+    sum(extra) as revenue_monthly_extra,
+    sum(mta_tax) as revenue_monthly_mta_tax,
+    sum(tip_amount) as revenue_monthly_tip_amount,
+    sum(tolls_amount) as revenue_monthly_tolls_amount,
+    sum(improvement_surcharge) as revenue_monthly_improvement_surcharge,
+    sum(total_amount) as revenue_monthly_total_amount,
+
+    -- Additional calculations
+    count(tripid) as total_monthly_trips,
+    avg(passenger_count) as avg_monthly_passenger_count,
+    avg(trip_distance) as avg_monthly_trip_distance
+
+    from trips_data
+    group by 1,2,3
+```
+Note that I again removed the two fields as per step 11.
+
+2. We now need to update our schema.yml from the staging folder by adding models section to it. The models part will be added from the [course's repo](https://github.com/DataTalksClub/data-engineering-zoomcamp/blob/main/04-analytics-engineering/taxi_rides_ny/models/staging/schema.yml#L17). Note that the result of putting these adjustments in is to both document and test our models. 
+
+3. Tests
+- A test is an assumption that we make about our data. In dbt a test is the same as a model – it is a SELECT query. What a test does in dbt is report on how many records do not follow the assumption that we made.
+- dbt provides us with four basic tests that we can add to our columns to check.
+- Note that we use a variable in the added schema and that’s because our accepted values are going to apply to both our green and yellow trip data. We therefore need to define this variable in the <code>project.yml</code> file.
+- Adjust the staging models as per "Fix green/yellow trip data" sections [here](https://learningdataengineering540969211.wordpress.com/2022/02/20/week-4-de-zoomcamp-4-3-2-testing-and-documenting-the-project-part-1/).
+- Running the <code>dbt test</code> confirms that the permissions error still persists. Only after adding "Storage Object Creator" as a role to the dbt-service-account the issue is resolved, the tests are passed with only two warnings:
+  <img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/4_analytics_engineering/_doc/dbt_test_results.png" alt="dbt test results" width="700"/>
+
+- Let's re-build the whole project to see if it works as a whole. I run, and the build is successeful with no test errors logged.
+  
+  <img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/4_analytics_engineering/_doc/dbt_build_run_result.png" alt="dbt build run result" width="1100"/>
+
+
+#### Documentation
+
+- dbt provides a way to generate documentation for the whole project.
+- We can render this as a website as well.
+- There is one thing that we are missing in terms of our documentation up to this stage and that is the schema.yml for the Core folder.
+- Let’s create that file now. Copy its contents from the [course's repo](https://github.com/DataTalksClub/data-engineering-zoomcamp/blob/main/04-analytics-engineering/taxi_rides_ny/models/core/schema.yml).
+- I've again removed the ehail and trip_types fields from this schema file and re-buid the whole project to make sure all works as expected. All 17 tests have passed and I'm happy to move one to the deployment part of this project.
+
+Before doing this, let's have a look at what was acheaved by completing this part of the module in BigQuery. We see that we have created four tables and two views in our development dataset:
+  <img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/4_analytics_engineering/_doc/dev_env_bq_result.png" alt="dev_env_bq_result" width="600"/>
+
+### Deploying with dbt Cloud
+After testing and documenting our dbt project, it's time to deploy it. Note that:
+- out development environtment is separate from our production environtment;
+- deployment will be done via version control and CI/CD (Continuous Integration and Continuous Delivery).
+- before continue, make sure everything that was previously done is commited to the main branch of your GitHub repo.
+- navigate to your dbt environments via Deploy > Environments
+- at this stage only Development environment should be should there
+- create a Production environtment: click on the "Create environtment" button on the top right
+- field that need to be added/selected are:
+  - Environment name: Production
+  - Environment type: Deployment
+  - Connection: BigQuery
+  - Dataset: the name of your production dataset in BigQuery 
+- go to Deploy > Jobs
+- click on the "Create job" button, add the following details:
+  - Job name: dbt_build
+  - Environment: Production
+  - Execution settings > Commands: 
+    - dbt seed
+    - dbt run
+    - dbt test
+  - there is of course options to schedule the job which I'm not using now as I want manually run the job to see if it simply works in the first place; I therefore save the job and run it by clicking on the "Run now" button;
+- after the job has run and marked as "succeeded" we can see the production dataset being updated in the BigQuery:
+  <img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/4_analytics_engineering/_doc/dev_prod_bq.png" alt="Production run results in BigQuery succeeded" width="600"/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- ### Anatomy of a dbt Model
+
+- dbt models are mostly written in SQL (remember that a dbt model is essentially a SELECT query)
+- the config() function is commonly used at the beginning of a model to define a materialization strategy - a strategy for persisting dbt models in a warehouse. 
+
+Here's an example dbt model:
+```sql
+{{
+    config(materialized='table')
+}}
+
+SELECT *
+FROM staging.source_table
+WHERE record_state = 'ACTIVE'
+```
+#### [Types of Materialization Strategies](https://docs.getdbt.com/docs/build/materializations)
+Materializations are strategies for persisting dbt models in a warehouse.
+
+Types of materializations built into dbt:
+1. table - the model will be rebuilt as a table on each run
+2. view - the model will be rebuild on each run as a SQL view
+3. incremental - a table strategy that allows to add/update records incrementally rather than rebuilding the complete table on each run
+4. ephemeral - creates a Common Table Expression (CTE)
+5. materialized view
+6. [custom materializations](https://docs.getdbt.com/guides/create-new-materializations?step=1) for advanced users.
+   
+The above model will be compiled by dbt into the following SQL query:
+```sql
+CREATE TABLE my_schema.my_model AS (
+    SELECT *
+    FROM staging.source_table
+    WHERE record_state = 'ACTIVE'
+)
+```
+After the code is compiled, dbt will run the compiled code in the Data Warehouse.
+
+#### Packages
+- Macros can be exported to packages, similarly to how classes and functions can be exported to libraries.
+- Packages contain standalone dbt projects with models and macros that tackle a specific problem area.
+- To use a package, you must first create a packages.yml file in the root of your work directory. E.g.:
+  ```yml
+  packages:
+    - package: dbt-labs/dbt_utils
+      version: 1.3.0
+  ```
+- After declaring your packages, you need to install them by running the <code>dbt deps</code> command.
+
+
+
+
+### Deploying With dbt
+[video source 4.3.1](https://www.youtube.com/watch?v=UVI30Vxzd6c&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=40)
+
+#### Anatomy of a dbt Model
+
+- dbt models are mostly written in SQL (remember that a dbt model is essentially a SELECT query)
+- the config() function is commonly used at the beginning of a model to define a materialization strategy - a strategy for persisting dbt models in a warehouse. 
+
+Here's an example dbt model:
+```sql
+{{
+    config(materialized='table')
+}}
+
+SELECT *
+FROM staging.source_table
+WHERE record_state = 'ACTIVE'
+```
+#### [Types of Materialization Strategies](https://docs.getdbt.com/docs/build/materializations)
+Materializations are strategies for persisting dbt models in a warehouse.
+
+Types of materializations built into dbt:
+1. table - the model will be rebuilt as a table on each run
+2. view - the model will be rebuild on each run as a SQL view
+3. incremental - a table strategy that allows to add/update records incrementally rather than rebuilding the complete table on each run
+4. ephemeral - creates a Common Table Expression (CTE)
+5. materialized view
+6. [custom materializations](https://docs.getdbt.com/guides/create-new-materializations?step=1) for advanced users.
+   
+The above model will be compiled by dbt into the following SQL query:
+```sql
+CREATE TABLE my_schema.my_model AS (
+    SELECT *
+    FROM staging.source_table
+    WHERE record_state = 'ACTIVE'
+)
+```
+After the code is compiled, dbt will run the compiled code in the Data Warehouse.
+
+#### Packages
+- Macros can be exported to packages, similarly to how classes and functions can be exported to libraries.
+- Packages contain standalone dbt projects with models and macros that tackle a specific problem area.
+- To use a package, you must first create a packages.yml file in the root of your work directory. E.g.:
+  ```yml
+  packages:
+    - package: dbt-labs/dbt_utils
+      version: 1.3.0
+  ```
+- After declaring your packages, you need to install them by running the <code>dbt deps</code> command. -->
+
 
 
 <!-- # Analytics Engineering
@@ -635,7 +856,7 @@ Before we begin, create 2 new empty datasets for your project in BigQuery:
 1. In the IDE windows, press the green Initilize button to create the project files.
 2. Inside dbt_project.yml, change the project name both in the name field as well as right below the models: block. You may comment or delete the example block at the end. -->
 
-
+<!-- 
 ### Developing taxi_rides_ny dbt Project
 1. After setting up dbt Cloud account, in the Settings of your project rename the default name to "taxi_rides_ny".
 2. Reference the given name in the dbt_project.yml file under the "name:" and straight after the "models:" line:
@@ -942,13 +1163,13 @@ You should now have two BigQuery views with the same schema with the new view st
         trips_unioned.store_and_fwd_flag, 
         trips_unioned.passenger_count, 
         trips_unioned.trip_distance, 
-        <!-- trips_unioned.trip_type,  -->
-        trips_unioned.fare_amount, 
+        trips_unioned.trip_type, 
+        <!-- trips_unioned.fare_amount, 
         trips_unioned.extra, 
         trips_unioned.mta_tax, 
         trips_unioned.tip_amount, 
         trips_unioned.tolls_amount, 
-        <!-- trips_unioned.ehail_fee,  -->
+        <!-- trips_unioned.ehail_fee, 
         trips_unioned.improvement_surcharge, 
         trips_unioned.total_amount, 
         trips_unioned.payment_type, 
@@ -958,226 +1179,5 @@ You should now have two BigQuery views with the same schema with the new view st
     on trips_unioned.pickup_locationid = pickup_zone.locationid
     inner join dim_zones as dropoff_zone
     on trips_unioned.dropoff_locationid = dropoff_zone.locationid
-    ```
-    - the whole point of creating the fact_trips model is to show that we can take both existing models – the staging green trip data and the staging yellow trip data – and generate a new model. 
-    <img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/4_analytics_engineering/_doc/fact_trips_mdl.png" alt="fact trips dbt model" width="500"/>
-    - After running the model I hit a weired error : <code> Access Denied: BigQuery BigQuery: Permission denied while globbing file pattern. dbt-service-account@dtc-de-....iam.gserviceaccount.com does not have storage.objects.list access to the Google Cloud Storage bucket. Permission 'storage.objects.list' denied on resource (or it may not exist). Please make sure gs://dtc_data_lake_dtc-de-.../raw/green_tripdata/* is accessible via appropriate IAM roles, e.g. Storage Object Viewer or Storage Object Creator</code>
-    - I see that [a similar permission error was also encountered](https://learningdataengineering540969211.wordpress.com/2022/02/20/week-4-de-zoomcamp-4-3-1-build-the-first-dbt-models-part-6-seeds/) by prople from previous cohorts. As in these notes, after reviewing the permissions for the service account at first, I simple re-run the model and ... miracle of the miracles... it simply worked. At this stage, going into the reasons for why this error did appear and then simply resolved by itself is something outside I can afford based on my time budget. My estimate of where I in the module's material is something about 60% - I hope - and I simply will carry one with the next step.
-    - the result of running the fact_trips.sql model is a <code>dim_zones</code> table in your BigQuery's dev environtment dataset.
-
-### Testing and Documenting the dbt Project
-
-1. Create dm_monthly_zone_revenue.sql file in the <code>core</code> folder of the dbt project and add the content below to it:
-```sql
-{{ config(materialized='table') }}
-
-with trips_data as (
-    select * from {{ ref('fact_trips') }}
-)
-    select 
-    -- Reveneue grouping 
-    pickup_zone as revenue_zone,
-    -- {{ dbt.date_trunc("month", "pickup_datetime") }} as revenue_month, 
-    date_trunc(pickup_datetime, month) as revenue_month,
-
-    service_type, 
-
-    -- Revenue calculation 
-    sum(fare_amount) as revenue_monthly_fare,
-    sum(extra) as revenue_monthly_extra,
-    sum(mta_tax) as revenue_monthly_mta_tax,
-    sum(tip_amount) as revenue_monthly_tip_amount,
-    sum(tolls_amount) as revenue_monthly_tolls_amount,
-    sum(improvement_surcharge) as revenue_monthly_improvement_surcharge,
-    sum(total_amount) as revenue_monthly_total_amount,
-
-    -- Additional calculations
-    count(tripid) as total_monthly_trips,
-    avg(passenger_count) as avg_monthly_passenger_count,
-    avg(trip_distance) as avg_monthly_trip_distance
-
-    from trips_data
-    group by 1,2,3
-```
-Note that I again removed the two fields as per step 11.
-
-2. We now need to update our schema.yml from the staging folder by adding models section to it. The models part will be added from the [course's repo](https://github.com/DataTalksClub/data-engineering-zoomcamp/blob/main/04-analytics-engineering/taxi_rides_ny/models/staging/schema.yml#L17). Note that the result of putting these adjustments in is to both document and test our models. 
-
-3. Tests
-- A test is an assumption that we make about our data. In dbt a test is the same as a model – it is a SELECT query. What a test does in dbt is report on how many records do not follow the assumption that we made.
-- dbt provides us with four basic tests that we can add to our columns to check.
-- Note that we use a variable in the added schema and that’s because our accepted values are going to apply to both our green and yellow trip data. We therefore need to define this variable in the <code>project.yml</code> file.
-- Adjust the staging models as per "Fix green/yellow trip data" sections [here](https://learningdataengineering540969211.wordpress.com/2022/02/20/week-4-de-zoomcamp-4-3-2-testing-and-documenting-the-project-part-1/).
-- Running the <code>dbt test</code> confirms that the permissions error still persists. Only after adding "Storage Object Creator" as a role to the dbt-service-account the issue is resolved, the tests are passed with only two warnings:
-  <img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/4_analytics_engineering/_doc/dbt_test_results.png" alt="dbt test results" width="700"/>
-
-- Let's re-build the whole project to see if it works as a whole. I run, and the build is successeful with no test errors logged.
-  
-  <img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/4_analytics_engineering/_doc/dbt_build_run_result.png" alt="dbt build run result" width="1100"/>
-
-
-### Documentation
-
-- dbt provides a way to generate documentation for the whole project.
-- We can render this as a website as well.
-- There is one thing that we are missing in terms of our documentation up to this stage and that is the schema.yml for the Core folder.
-- Let’s create that file now. Copy its contents from the [course's repo](https://github.com/DataTalksClub/data-engineering-zoomcamp/blob/main/04-analytics-engineering/taxi_rides_ny/models/core/schema.yml).
-- I've again removed the ehail and trip_types fields from this schema file and re-buid the whole project to make sure all works as expected. All 17 tests have passed and I'm happy to move one to the deployment part of this project.
-
-Before doing this, let's have a look at what was acheaved by completing this part of the module in BigQuery. We see that we have created four tables and two views in our development dataset:
-  <img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/4_analytics_engineering/_doc/dev_env_bq_result.png" alt="dev_env_bq_result" width="600"/>
-
-### Deploying with dbt Cloud
-After testing and documenting our dbt project, it's time to deploy it. Note that:
-- out development environtment is separate from our production environtment;
-- deployment will be done via version control and CI/CD (Continuous Integration and Continuous Delivery).
-- before continue, make sure everything that was previously done is commited to the main branch of your GitHub repo.
-- navigate to your dbt environments via Deploy > Environments
-- at this stage only Development environment should be should there
-- create a Production environtment: click on the "Create environtment" button on the top right
-- field that need to be added/selected are:
-  - Environment name: Production
-  - Environment type: Deployment
-  - Connection: BigQuery
-  - Dataset: the name of your production dataset in BigQuery 
-- go to Deploy > Jobs
-- click on the "Create job" button, add the following details:
-  - Job name: dbt_build
-  - Environment: Production
-  - Execution settings > Commands: 
-    - dbt seed
-    - dbt run
-    - dbt test
-  - there is of course options to schedule the job which I'm not using now as I want manually run the job to see if it simply works in the first place; I therefore save the job and run it by clicking on the "Run now" button;
-- after the job has run and marked as "succeeded" we can see the production dataset being updated in the BigQuery:
-  <img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/4_analytics_engineering/_doc/dev_prod_bq.png" alt="Production run results in BigQuery succeeded" width="600"/>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!-- ### Anatomy of a dbt Model
-
-- dbt models are mostly written in SQL (remember that a dbt model is essentially a SELECT query)
-- the config() function is commonly used at the beginning of a model to define a materialization strategy - a strategy for persisting dbt models in a warehouse. 
-
-Here's an example dbt model:
-```sql
-{{
-    config(materialized='table')
-}}
-
-SELECT *
-FROM staging.source_table
-WHERE record_state = 'ACTIVE'
-```
-#### [Types of Materialization Strategies](https://docs.getdbt.com/docs/build/materializations)
-Materializations are strategies for persisting dbt models in a warehouse.
-
-Types of materializations built into dbt:
-1. table - the model will be rebuilt as a table on each run
-2. view - the model will be rebuild on each run as a SQL view
-3. incremental - a table strategy that allows to add/update records incrementally rather than rebuilding the complete table on each run
-4. ephemeral - creates a Common Table Expression (CTE)
-5. materialized view
-6. [custom materializations](https://docs.getdbt.com/guides/create-new-materializations?step=1) for advanced users.
-   
-The above model will be compiled by dbt into the following SQL query:
-```sql
-CREATE TABLE my_schema.my_model AS (
-    SELECT *
-    FROM staging.source_table
-    WHERE record_state = 'ACTIVE'
-)
-```
-After the code is compiled, dbt will run the compiled code in the Data Warehouse.
-
-#### Packages
-- Macros can be exported to packages, similarly to how classes and functions can be exported to libraries.
-- Packages contain standalone dbt projects with models and macros that tackle a specific problem area.
-- To use a package, you must first create a packages.yml file in the root of your work directory. E.g.:
-  ```yml
-  packages:
-    - package: dbt-labs/dbt_utils
-      version: 1.3.0
-  ```
-- After declaring your packages, you need to install them by running the <code>dbt deps</code> command.
-
-
-
-
-### Deploying With dbt
-[video source 4.3.1](https://www.youtube.com/watch?v=UVI30Vxzd6c&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=40)
-
-#### Anatomy of a dbt Model
-
-- dbt models are mostly written in SQL (remember that a dbt model is essentially a SELECT query)
-- the config() function is commonly used at the beginning of a model to define a materialization strategy - a strategy for persisting dbt models in a warehouse. 
-
-Here's an example dbt model:
-```sql
-{{
-    config(materialized='table')
-}}
-
-SELECT *
-FROM staging.source_table
-WHERE record_state = 'ACTIVE'
-```
-#### [Types of Materialization Strategies](https://docs.getdbt.com/docs/build/materializations)
-Materializations are strategies for persisting dbt models in a warehouse.
-
-Types of materializations built into dbt:
-1. table - the model will be rebuilt as a table on each run
-2. view - the model will be rebuild on each run as a SQL view
-3. incremental - a table strategy that allows to add/update records incrementally rather than rebuilding the complete table on each run
-4. ephemeral - creates a Common Table Expression (CTE)
-5. materialized view
-6. [custom materializations](https://docs.getdbt.com/guides/create-new-materializations?step=1) for advanced users.
-   
-The above model will be compiled by dbt into the following SQL query:
-```sql
-CREATE TABLE my_schema.my_model AS (
-    SELECT *
-    FROM staging.source_table
-    WHERE record_state = 'ACTIVE'
-)
-```
-After the code is compiled, dbt will run the compiled code in the Data Warehouse.
-
-#### Packages
-- Macros can be exported to packages, similarly to how classes and functions can be exported to libraries.
-- Packages contain standalone dbt projects with models and macros that tackle a specific problem area.
-- To use a package, you must first create a packages.yml file in the root of your work directory. E.g.:
-  ```yml
-  packages:
-    - package: dbt-labs/dbt_utils
-      version: 1.3.0
-  ```
-- After declaring your packages, you need to install them by running the <code>dbt deps</code> command. -->
+    ``` 
+- the whole point of creating the fact_trips model is to show that we can take both existing models – the staging green trip data and the staging yellow trip data  -->
