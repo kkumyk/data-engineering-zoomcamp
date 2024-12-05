@@ -1,3 +1,4 @@
+
 - [Analytics Engineering](#analytics-engineering)
   - [Prerequisites](#prerequisites)
   - [What is Analytics Engineering?](#what-is-analytics-engineering)
@@ -14,40 +15,19 @@
       - [Starting a dbt Project](#starting-a-dbt-project)
     - [Developing taxi\_rides\_ny dbt Project](#developing-taxi_rides_ny-dbt-project)
         - [Calling the macro in our model](#calling-the-macro-in-our-model)
-- [Analytics Engineering](#analytics-engineering-1)
-  - [Prerequisites](#prerequisites-1)
-  - [What is Analytics Engineering?](#what-is-analytics-engineering-1)
-  - [Data Modeling Concepts](#data-modeling-concepts-1)
-    - [ETL vs ELT](#etl-vs-elt-1)
-    - [Dimensional Modeling](#dimensional-modeling-1)
-  - [Introduction to dbt](#introduction-to-dbt-1)
-    - [What is dbt?](#what-is-dbt-1)
-    - [How does dbt work?](#how-does-dbt-work-1)
-      - [What is a dbt model?](#what-is-a-dbt-model-1)
-    - [How to use dbt?](#how-to-use-dbt-1)
-    - [Setting Up dbt](#setting-up-dbt-1)
-      - [Setting Up dbt Cloud](#setting-up-dbt-cloud-1)
-      - [Starting a dbt Project](#starting-a-dbt-project-1)
     - [Developing taxi\_rides\_ny dbt Project](#developing-taxi_rides_ny-dbt-project-1)
         - [Calling the macro in our model](#calling-the-macro-in-our-model-1)
     - [Testing and Documenting the dbt Project](#testing-and-documenting-the-dbt-project)
     - [Documentation](#documentation)
-    - [Deploying with dbt](#deploying-with-dbt)
-      - [Anatomy of a dbt Model](#anatomy-of-a-dbt-model)
-      - [Types of Materialization Strategies](#types-of-materialization-strategies)
-      - [Packages](#packages)
-    - [Deploying With dbt](#deploying-with-dbt-1)
-      - [Anatomy of a dbt Model](#anatomy-of-a-dbt-model-1)
-      - [Types of Materialization Strategies](#types-of-materialization-strategies-1)
-      - [Packages](#packages-1)
+    - [Deploying with dbt Cloud](#deploying-with-dbt-cloud)
 
 
 # Analytics Engineering
 
 ## Prerequisites
 
-1. a running warehouse (BigQuery or Postgres)
-2. a set of running pipelines ingesting the project dataset (week 3 completed)
+- a running warehouse (BigQuery or Postgres)
+- a set of running pipelines ingesting the project dataset (week 3 completed)
 
     The following datasets ingested from the course [Datasets list](https://github.com/DataTalksClub/nyc-tlc-data/):
     - Yellow taxi data - Years 2019 and 2020
@@ -85,19 +65,21 @@
 
 Tools that shaped the ways of working with data:
 
-1. MPP (Massively Parallel Processing) Databases 
+MPP (Massively Parallel Processing) Databases
+
    - Lower the cost of storage
    - BigQuery, Snowflake, Redshift
 
-2. Data-Pipelines-As-A-Service
-    - Simplify the ETL process
-    - Fivetran, Stitch
+Data-Pipelines-As-A-Service
 
-3. SQL-first / Version Control Systems
+- Simplify the ETL process
+- Fivetran, Stitch
+
+SQL-first / Version Control Systems
     - Looker
-4. Self Service Analytics
+Self Service Analytics
     - Mode
-5. Data governance
+Data governance
 
 Traditional role separation of data teams:
 
@@ -508,52 +490,10 @@ You should now have two BigQuery views with the same schema with the new view st
     inner join dim_zones as dropoff_zone
     on trips_unioned.dropoff_locationid = dropoff_zone.locationid
     ```
-    - the whole point of creating the fact_trips model is to show that we can take both existing models – the staging green trip data and the staging yellow tri- [Analytics Engineering](#analytics-engineering)
-- [Analytics Engineering](#analytics-engineering)
-  - [Prerequisites](#prerequisites)
-  - [What is Analytics Engineering?](#what-is-analytics-engineering)
-  - [Data Modeling Concepts](#data-modeling-concepts)
-    - [ETL vs ELT](#etl-vs-elt)
-    - [Dimensional Modeling](#dimensional-modeling)
-  - [Introduction to dbt](#introduction-to-dbt)
-    - [What is dbt?](#what-is-dbt)
-    - [How does dbt work?](#how-does-dbt-work)
-      - [What is a dbt model?](#what-is-a-dbt-model)
-    - [How to use dbt?](#how-to-use-dbt)
-    - [Setting Up dbt](#setting-up-dbt)
-      - [Setting Up dbt Cloud](#setting-up-dbt-cloud)
-      - [Starting a dbt Project](#starting-a-dbt-project)
-    - [Developing taxi\_rides\_ny dbt Project](#developing-taxi_rides_ny-dbt-project)
-        - [Calling the macro in our model](#calling-the-macro-in-our-model)
-- [Analytics Engineering](#analytics-engineering-1)
-  - [Prerequisites](#prerequisites-1)
-  - [What is Analytics Engineering?](#what-is-analytics-engineering-1)
-  - [Data Modeling Concepts](#data-modeling-concepts-1)
-    - [ETL vs ELT](#etl-vs-elt-1)
-    - [Dimensional Modeling](#dimensional-modeling-1)
-  - [Introduction to dbt](#introduction-to-dbt-1)
-    - [What is dbt?](#what-is-dbt-1)
-    - [How does dbt work?](#how-does-dbt-work-1)
-      - [What is a dbt model?](#what-is-a-dbt-model-1)
-    - [How to use dbt?](#how-to-use-dbt-1)
-    - [Setting Up dbt](#setting-up-dbt-1)
-      - [Setting Up dbt Cloud](#setting-up-dbt-cloud-1)
-      - [Starting a dbt Project](#starting-a-dbt-project-1)
-    - [Developing taxi\_rides\_ny dbt Project](#developing-taxi_rides_ny-dbt-project-1)
-        - [Calling the macro in our model](#calling-the-macro-in-our-model-1)
-    - [Testing and Documenting the dbt Project](#testing-and-documenting-the-dbt-project)
-    - [Documentation](#documentation)
-    - [Deploying with dbt](#deploying-with-dbt)
-      - [Anatomy of a dbt Model](#anatomy-of-a-dbt-model)
-      - [Types of Materialization Strategies](#types-of-materialization-strategies)
-      - [Packages](#packages)
-    - [Deploying With dbt](#deploying-with-dbt-1)
-      - [Anatomy of a dbt Model](#anatomy-of-a-dbt-model-1)
-      - [Types of Materialization Strategies](#types-of-materialization-strategies-1)
-      - [Packages](#packages-1)
+    - the whole point of creating the fact_trips model is to show that we can take both existing models – the staging green trip data and the staging yellow tri- 
 
 
-# Analytics Engineering
+<!-- # Analytics Engineering
 
 ## Prerequisites
 
@@ -693,7 +633,7 @@ Before we begin, create 2 new empty datasets for your project in BigQuery:
    
 #### Starting a dbt Project
 1. In the IDE windows, press the green Initilize button to create the project files.
-2. Inside dbt_project.yml, change the project name both in the name field as well as right below the models: block. You may comment or delete the example block at the end.
+2. Inside dbt_project.yml, change the project name both in the name field as well as right below the models: block. You may comment or delete the example block at the end. -->
 
 
 ### Developing taxi_rides_ny dbt Project
@@ -1087,10 +1027,62 @@ Note that I again removed the two fields as per step 11.
 Before doing this, let's have a look at what was acheaved by completing this part of the module in BigQuery. We see that we have created four tables and two views in our development dataset:
   <img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/4_analytics_engineering/_doc/dev_env_bq_result.png" alt="dev_env_bq_result" width="600"/>
 
-### Deploying with dbt
-[video source 4.3.1](https://www.youtube.com/watch?v=UVI30Vxzd6c&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=40)
+### Deploying with dbt Cloud
+After testing and documenting our dbt project, it's time to deploy it. Note that:
+- out development environtment is separate from our production environtment;
+- deployment will be done via version control and CI/CD (Continuous Integration and Continuous Delivery).
+- before continue, make sure everything that was previously done is commited to the main branch of your GitHub repo.
+- navigate to your dbt environments via Deploy > Environments
+- at this stage only Development environment should be should there
+- create a Production environtment: click on the "Create environtment" button on the top right
+- field that need to be added/selected are:
+  - Environment name: Production
+  - Environment type: Deployment
+  - Connection: BigQuery
+  - Dataset: the name of your production dataset in BigQuery 
+- go to Deploy > Jobs
+- click on the "Create job" button, add the following details:
+  - Job name: dbt_build
+  - Environment: Production
+  - Execution settings > Commands: 
+    - dbt seed
+    - dbt run
+    - dbt test
+  - there is of course options to schedule the job which I'm not using now as I want manually run the job to see if it simply works in the first place; I therefore save the job and run it by clicking on the "Run now" button;
+- after the job has run and marked as "succeeded" we can see the production dataset being updated in the BigQuery:
+  <img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/4_analytics_engineering/_doc/dev_prod_bq.png" alt="Production run results in BigQuery succeeded" width="600"/>
 
-#### Anatomy of a dbt Model
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- ### Anatomy of a dbt Model
 
 - dbt models are mostly written in SQL (remember that a dbt model is essentially a SELECT query)
 - the config() function is commonly used at the beginning of a model to define a materialization strategy - a strategy for persisting dbt models in a warehouse. 
@@ -1136,18 +1128,6 @@ After the code is compiled, dbt will run the compiled code in the Data Warehouse
       version: 1.3.0
   ```
 - After declaring your packages, you need to install them by running the <code>dbt deps</code> command.
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1200,5 +1180,4 @@ After the code is compiled, dbt will run the compiled code in the Data Warehouse
     - package: dbt-labs/dbt_utils
       version: 1.3.0
   ```
-- After declaring your packages, you need to install them by running the <code>dbt deps</code> command.
-
+- After declaring your packages, you need to install them by running the <code>dbt deps</code> command. -->
