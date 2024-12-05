@@ -18,6 +18,7 @@
     - [Testing and Documenting the dbt Project](#testing-and-documenting-the-dbt-project)
       - [Documentation](#documentation)
     - [Deploying with dbt Cloud](#deploying-with-dbt-cloud)
+  - [Credits](#credits)
 
 
 # Analytics Engineering
@@ -584,7 +585,9 @@ After testing and documenting our dbt project, it's time to deploy it. Note that
 
 
 
-
+## Credits
+- [Notes by Alvaro Navas](https://github.com/ziritrion/dataeng-zoomcamp/blob/main/notes/4_analytics.md)
+- [Sandy's DE learning blog](https://learningdataengineering540969211.wordpress.com/2022/02/17/week-4-setting-up-dbt-cloud-with-bigquery/)
 
 
 
