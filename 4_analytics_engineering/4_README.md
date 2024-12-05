@@ -596,8 +596,13 @@ After testing and documenting our dbt project, it's time to deploy it. Note that
 - select the fields as on the screenshot below:
 <img src="https://learningdataengineering540969211.wordpress.com/wp-content/uploads/2022/02/screenshot-from-2022-02-20-14-56-44.png?w=1024" alt="dev_env_bq_result" width="1000"/>
 - add a control for the date (Add a control > Date Range Control > ) range by selecting the data range from the 1st of Jan 2019 to 31st of December of 2020.
+  
 - If all went well, you will see the graph updated to the below:
 <img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/4_analytics_engineering/_doc/fact_trips_2019_2020_data.png" alt="dev_env_bq_result" width="1000"/>
+
+- adding more charts by following [notes here](https://learningdataengineering540969211.wordpress.com/2022/02/21/week-4-de-zoomcamp-4-5-1-visualising-the-data-with-google-data-studio-part-2/)
+
+
 
 
 ## Credits
