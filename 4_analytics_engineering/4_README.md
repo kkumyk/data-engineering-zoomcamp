@@ -602,7 +602,8 @@ After testing and documenting our dbt project, it's time to deploy it. Note that
 
 - adding more charts by following [notes here](https://learningdataengineering540969211.wordpress.com/2022/02/21/week-4-de-zoomcamp-4-5-1-visualising-the-data-with-google-data-studio-part-2/)
 
-
+- the remaining charts for the Trips Analysis Report are added by following the examples from [this post](https://learningdataengineering540969211.wordpress.com/2022/02/21/week-4-de-zoomcamp-4-5-1-visualising-the-data-with-google-data-studio-part-2/):
+  <img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/4_analytics_engineering/_doc/trip_analysis_report.png" alt="trip analysis report" width="1100"/>
 
 
 ## Credits
