@@ -38,7 +38,7 @@ For everything that can be expressed with SQL, it's always a good idea to do so,
 
 ## [Spark Installation on Linux](https://github.com/DataTalksClub/data-engineering-zoomcamp/blob/main/05-batch/setup/linux.md)
 
-### Installing OpenJDK (Java Development Kit) 17 
+### Installing [OpenJDK](https://jdk.java.net/archive/) (Java Development Kit) 17 
 
 - I was not able to install version 11 on Ubuntu 23.10 but I see that Spark now also supports 17.
 ```bash
@@ -51,22 +51,61 @@ tar xzfv openjdk-17.0.2_linux-x64_bin.tar.gz
 # verify that the java binary exists
 ls ~/spark/jdk-17.0.2/bin/java
 
-#if the java executable is found, you can proceed to set the JAVA_HOME and update/add it to PATH; once the JDK is correctly installed, update the environment variables in your shell configuration file (~/.bashrc, ~/.zshrc, etc.)
+#if the java executable is found, proceed to set the JAVA_HOME and update/add it to PATH;
+# once the JDK is correctly installed, update the environment variables in your shell configuration file (~/.bashrc, ~/.zshrc, etc.)
 export JAVA_HOME="${HOME}/spark/jdk-17.0.2"
 export PATH="${JAVA_HOME}/bin:${PATH}"
 
 # source the file to apply the changes
 source ~/.bashrc   # or source ~/.zshrc depending on your shell
 
-# check Java verion to see if it worked
+# check Java version to see if it worked
 java --version
 
-# the above should display the version of the installed JDK 
+# the above should display the version of the installed JDK; output:
 openjdk 17.0.2 2022-01-18
 OpenJDK Runtime Environment (build 17.0.2+8-86)
 OpenJDK 64-Bit Server VM (build 17.0.2+8-86, mixed mode, sharing)
 
+# remove the archive
+rm openjdk-17.0.2_linux-x64_bin.tar.gz
 ```
+
+### Installing Spark
+
+```bash
+# download Spark 3.3.2 version:
+wget https://archive.apache.org/dist/spark/spark-3.5.3/spark-3.5.3-bin-hadoop3.tgz
+
+# unpack
+tar xzfv spark-3.5.3-bin-hadoop3.tgz
+
+# remove the archive
+rm spark-3.5.3-bin-hadoop3.tgz
+
+# add it to PATH
+export SPARK_HOME="${HOME}/spark/spark-3.5.3-bin-hadoop3"
+export PATH="${SPARK_HOME}/bin:${PATH}"
+
+# check if Spark is working with $ spark-shell and run the following:
+val data = 1 to 10000
+val distData = sc.parallelize(data)
+distData.filter(_ < 10).collect()
+```
+
+### PySpark
+
+```bash
+# To run PySpark, we first need to add it to PYTHONPATH:
+export PYTHONPATH="${SPARK_HOME}/python/:$PYTHONPATH"
+export PYTHONPATH="${SPARK_HOME}/python/lib/py4j-0.10.9.7-src.zip:$PYTHONPATH"
+
+# run Jupyter to test if things work by going to a different directory and downloading a CSV file for testing:
+wget https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv
+```
+
+
+
 
 
 ## Spark SQL and DataFrames
@@ -95,3 +134,4 @@ Spark SQL - one way of querying our Spark data frame
 - [Week 5: DE Zoomcamp 5.2.1 – Installing Spark on Linux](https://learningdataengineering540969211.wordpress.com/tag/dezoomcamp/)
 - [Notes by HongWei](https://github.com/hwchua0209/data-engineering-zoomcamp-submission/blob/main/05-batch-processing/README.md)
 - [2024 videos transcript by Maria Fisher](https://drive.google.com/drive/folders/1XMmP4H5AMm1qCfMFxc_hqaPGw31KIVcb)
+- [What is .bashrc file in Linux?](https://www.digitalocean.com/community/tutorials/bashrc-file-in-linux)
