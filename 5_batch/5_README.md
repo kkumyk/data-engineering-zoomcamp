@@ -62,7 +62,8 @@ source ~/.bashrc   # or source ~/.zshrc depending on your shell
 # check Java version to see if it worked
 java --version
 
-# the above should display the version of the installed JDK; output:
+# the above should display the version of the installed JDK;
+# output:
 openjdk 17.0.2 2022-01-18
 OpenJDK Runtime Environment (build 17.0.2+8-86)
 OpenJDK 64-Bit Server VM (build 17.0.2+8-86, mixed mode, sharing)
@@ -88,6 +89,8 @@ export SPARK_HOME="${HOME}/spark/spark-3.5.3-bin-hadoop3"
 export PATH="${SPARK_HOME}/bin:${PATH}"
 
 # check if Spark is working with $ spark-shell and run the following:
+$ spark-shell
+
 val data = 1 to 10000
 val distData = sc.parallelize(data)
 distData.filter(_ < 10).collect()
@@ -104,7 +107,94 @@ export PYTHONPATH="${SPARK_HOME}/python/lib/py4j-0.10.9.7-src.zip:$PYTHONPATH"
 wget https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv
 ```
 
+### Jupyter Notebook
+Jupyter Notebook had to be installed in a virtual environment:
 
+```bash
+# create notebooks directory and change to it
+mkdir notebooks
+cd notebooks
+
+# create a virtual environment
+python3 -m venv venv 
+
+#activate the virtual environment
+source venv/bin/activate
+
+# install Jupyter and PySpark in your virtual env
+pip install jupyter pyspark
+
+# configure PySpark to Work with Jupyter by setting env vars for the virtual env; for that:
+# edit the activate script in the venv/bin directory
+nano venv/bin/activate
+
+# add these lines to the end of the activate script:
+export JAVA_HOME="${HOME}/spark/jdk-17.0.2"
+export PATH="${JAVA_HOME}/bin:${PATH}"
+export SPARK_HOME="${HOME}/spark/spark-3.5.3-bin-hadoop3"
+export PATH="${SPARK_HOME}/bin:${PATH}"
+export PYSPARK_DRIVER_PYTHON="jupyter"
+export PYSPARK_DRIVER_PYTHON_OPTS="notebook"
+
+# save and close the file
+Ctrl O
+Enter
+Ctrl X
+
+# activate the virtual environment again:
+source venv/bin/activate
+
+# run Jupyter Notebook
+jupyter notebook
+
+# create a new notebook in the opened browser window: New > Python3
+
+# download CSV file for testing:
+wget https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv
+
+# add the code below to your notebook:
+import pyspark
+from pyspark.sql import SparkSession
+
+# creating a Spark session
+spark = SparkSession.builder \
+    .master("local[*]") \ # to connect to local master*
+    .appName('test') \
+    .getOrCreate()
+
+df = spark.read \
+    .option("header", "true") \
+    .csv('taxi_zone_lookup.csv')
+
+df.show()
+
+# the output result should be:
++----------+-------------+--------------------+------------+
+|LocationID|      Borough|                Zone|service_zone|
++----------+-------------+--------------------+------------+
+|         1|          EWR|      Newark Airport|         EWR|
+|         2|       Queens|         Jamaica Bay|   Boro Zone|
+|         3|        Bronx|Allerton/Pelham G...|   Boro Zone|
+|         4|    Manhattan|       Alphabet City| Yellow Zone|
+|         5|Staten Island|       Arden Heights|   Boro Zone|
+|         6|Staten Island|Arrochar/Fort Wad...|   Boro Zone|
+|         7|       Queens|             Astoria|   Boro Zone|
+|         8|       Queens|        Astoria Park|   Boro Zone|
+|         9|       Queens|          Auburndale|   Boro Zone|
+|        10|       Queens|        Baisley Park|   Boro Zone|
+|        11|     Brooklyn|          Bath Beach|   Boro Zone|
+|        12|    Manhattan|        Battery Park| Yellow Zone|
+|        13|    Manhattan|   Battery Park City| Yellow Zone|
+|        14|     Brooklyn|           Bay Ridge|   Boro Zone|
+|        15|       Queens|Bay Terrace/Fort ...|   Boro Zone|
+|        16|       Queens|             Bayside|   Boro Zone|
+|        17|     Brooklyn|             Bedford|   Boro Zone|
+|        18|        Bronx|        Bedford Park|   Boro Zone|
+|        19|       Queens|           Bellerose|   Boro Zone|
+|        20|        Bronx|             Belmont|   Boro Zone|
++----------+-------------+--------------------+------------+
+```
+\* master in Spark coordinates jobs of a spark cluster and we will use the local one. Local means it will create a local cluster and ‘*’ means it will use all the available CPUs.
 
 
 
