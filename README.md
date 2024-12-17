@@ -7,3 +7,5 @@ Module 2: [Workflow Orchestration with Airflow](https://github.com/kkumyk/data-e
 Module 3: [Data Warehouse and BigQuery](https://github.com/kkumyk/data-engineering-zoomcamp/tree/main/3_data_warehouse)
 
 Module 4: [Analytics Engineering](https://github.com/kkumyk/data-engineering-zoomcamp/tree/main/4_analytics_engineering)
+
+Module 5: [Batch Processing](https://github.com/kkumyk/data-engineering-zoomcamp/tree/main/5_batch)
