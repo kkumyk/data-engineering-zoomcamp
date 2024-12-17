@@ -3,20 +3,21 @@
 ## Introduction to Batch Processing
 There are 2 ways of processing data:
 - Batch processing: processing chunks of data at regular intervals; e.g.: processing taxi trips each month.
+
 - Streaming: processing data on the fly; e.g.: processing taxi trips data as soon as it is generated.
 
 ### Batch Jobs
 A Batch Job is a unit of work that will process data in batches.
 
-BJs can be scheduled in many ways: weekly, daily, hourly...
+Batch Jobs can be scheduled in many ways: weekly, daily, hourly...
 
-BJs can be carry out using different technologies:
+Batch Jobs can be carry out using different technologies:
 
   - Python scripts
   - SQL
   - Spark which will be used in this lesson
 
-BJs are commonly orchestrated with tools such as Airflow.
+Batch Jobs are commonly orchestrated with tools such as Airflow.
 
 
 ## Introduction to Apache Spark
@@ -149,8 +150,14 @@ jupyter notebook
 
 # create a new notebook in the opened browser window: New > Python3
 
-# download CSV file for testing:
+# download CSV file for testing
+# download from the command line:
 wget https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv
+
+# download from the Jupyter Notebook:
+# note that if we want to access bash commands – which wget is one –
+# we need to prepend our code with !. 
+!wget https://s3.amazonaws.com/nyc-tlc/misc/taxi+_zone_lookup.csv
 
 # add the code below to your notebook:
 import pyspark
@@ -159,14 +166,17 @@ from pyspark.sql import SparkSession
 # creating a Spark session
 spark = SparkSession.builder \
     .master("local[*]") \ # to connect to local master*
-    .appName('test') \
-    .getOrCreate()
-
+    .appName('test') \ # the name of application is "test"
+    .getOrCreate() # create a Spark session does not exist
+# read the downloaded CSV file with Spark and put it into a Spark dataframe
 df = spark.read \
-    .option("header", "true") \
+    .option("header", "true") \ # return the headers with the data
     .csv('taxi_zone_lookup.csv')
 
+# show the results
 df.show()
+
+# note that the result of running this is going to fire up Spark on our localhost at 4040
 
 # the output result should be:
 +----------+-------------+--------------------+------------+
@@ -193,8 +203,39 @@ df.show()
 |        19|       Queens|           Bellerose|   Boro Zone|
 |        20|        Bronx|             Belmont|   Boro Zone|
 +----------+-------------+--------------------+------------+
+
+# save our Spark dataframe to parquet;
+# after running the command below, the notebook folder will contain
+# zones folder with a parquet file in it
+# _SUCCESS file that will also be created is a confirmation that the job was successful
+df.write.parquet('zones')
+
+# check our Spark jobs:
+localhost:4040/jobs
 ```
+<img src="https://github.com/kkumyk/data-engineering-zoomcamp/blob/main/5_batch/_doc/spark_job_runs.png" alt="spark job runs.png" width="1100"/>
+
+
 \* master in Spark coordinates jobs of a spark cluster and we will use the local one. Local means it will create a local cluster and ‘*’ means it will use all the available CPUs.
+
+
+## Partitions
+
+[video source: First Look at Spark/PySpark](https://www.youtube.com/watch?v=r_Sf6fCB40c&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=51)
+
+Spark <strong>cluster</strong>:
+  - composed of multiple <strong> executors</strong> 
+  - each executor can process data independently in order to parallelize and speed up work
+    - in the previous example we read a single large CSV file
+    - a file can only be read by a single executor
+    - this means that the code we've written so far isn't parallelised >> 
+    - the code that is not parallelised will only be run by a single executor and not by many at the same time
+    - to solve the above issue, we can split a file into multiple parts - <strong>partitions</strong> - so that each executor can take care of a part and have all executors working simultaneously
+
+- We will now read the CSV file, partition the dataframe and parquetise it.
+- This will create multiple files in parquet format.
+
+<blockquote><i>Note</i>: converting to parquet is an expensive operation which may take several minutes.</blockquote>
 
 
 
@@ -221,7 +262,7 @@ Spark SQL - one way of querying our Spark data frame
 ## Credits
 - [DataTalksClub](https://github.com/DataTalksClub/data-engineering-zoomcamp/tree/main/05-batch)
 - [Notes by Alvaro Navas](https://github.com/ziritrion/dataeng-zoomcamp/blob/main/notes/5_batch_processing.md)
-- [Week 5: DE Zoomcamp 5.2.1 – Installing Spark on Linux](https://learningdataengineering540969211.wordpress.com/tag/dezoomcamp/)
+- [Sandy's Blog](https://learningdataengineering540969211.wordpress.com/tag/dezoomcamp/)
 - [Notes by HongWei](https://github.com/hwchua0209/data-engineering-zoomcamp-submission/blob/main/05-batch-processing/README.md)
 - [2024 videos transcript by Maria Fisher](https://drive.google.com/drive/folders/1XMmP4H5AMm1qCfMFxc_hqaPGw31KIVcb)
 - [What is .bashrc file in Linux?](https://www.digitalocean.com/community/tutorials/bashrc-file-in-linux)
