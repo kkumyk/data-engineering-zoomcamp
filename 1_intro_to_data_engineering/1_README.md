@@ -38,6 +38,23 @@
       - [Terraform Installation on Linux/Ubuntu](#terraform-installation-on-linuxubuntu)
   - [Credits](#credits)
 
+# Prerequisits
+
+1. Install Docker via Synaptic Package Manager and [Docker Desktop on Ubuntu](https://docs.docker.com/desktop/setup/install/linux/ubuntu/)
+    ```bash
+    docker --version # Docker version 27.4.1
+
+    docker compose version # Docker Compose version v2.30.3-desktop.1
+    ```
+3. Install Postgres via Synaptic Package Manager
+    ```bash
+    psql --version # psql (PostgreSQL) 16.6
+    ```
+4. Installed CLI for Postgres via Synaptic Package Manager
+    ```bash
+    pgcli -v # Version: 4.0.1
+    ```
+
 
 # Introduction to Data Engineering
 
