@@ -54,7 +54,7 @@
     ```bash
     pgcli -v # Version: 4.0.1
     ```
-
+5. Install python3-poetry dependency management package
 
 # Introduction to Data Engineering
 
@@ -102,7 +102,7 @@ nr_o_pizzas = sys.argv[1]
 # print a sentence with the argument
 print(f'Job finished successfully! Celebrate it with {nr_o_pizzas} pizzas!') 
 ```
-We can run this script with <i>python  pipeline.py <some_number></i> and it will print two lines:
+We can run this script with <i>poetry run python pipeline.py <some_number></i> and it will print two lines:
 
 ```bash
 ['pipeline.py', '10']
